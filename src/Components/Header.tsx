@@ -4,10 +4,10 @@ import { Menu as MenuIcon, Add as AddIcon , LightMode as LightModeIcon, DarkMode
 
 interface HeaderProps {
     mode: PaletteMode
-    handleToggleDrawer: ()=> void;
-    handleDrawerToggle: () => void;
+    handleToggleTheme: ()=> void;
+    handleToggleDrawer: () => void;
 }
-const Header: React.FC<HeaderProps> = ({mode, handleToggleDrawer, handleDrawerToggle}) => {
+const Header: React.FC<HeaderProps> = ({mode, handleToggleTheme, handleToggleDrawer}) => {
     
     return (
         <AppBar position='static'>
@@ -27,7 +27,7 @@ const Header: React.FC<HeaderProps> = ({mode, handleToggleDrawer, handleDrawerTo
                 <Box>
                     <IconButton
                         color='inherit'
-                        onClick={handleDrawerToggle}
+                        onClick={handleToggleDrawer}
                     >
                         <AddIcon />
                     </IconButton>
@@ -38,7 +38,7 @@ const Header: React.FC<HeaderProps> = ({mode, handleToggleDrawer, handleDrawerTo
                         <IconButton
                             color='inherit'
                             edge='end'
-                            onClick={handleToggleDrawer}
+                            onClick={handleToggleTheme}
                         >
                             <LightModeIcon />
                         </IconButton>
@@ -46,7 +46,7 @@ const Header: React.FC<HeaderProps> = ({mode, handleToggleDrawer, handleDrawerTo
                         <IconButton
                             color='inherit'
                             edge='end'
-                            onClick={handleToggleDrawer}
+                            onClick={handleToggleTheme}
                         >
                             <DarkModeIcon />
                         </IconButton>
