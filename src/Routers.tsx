@@ -5,6 +5,7 @@ import AuthLayout from "./Layout/AuthLayout";
 import Login from "./Pages/login";
 import Register from "./Pages/register";
 import Home from "./Pages/Home";
+import ExpenseDashboard from "./Pages/Expense/Expense";
 
 const router = createBrowserRouter([
     {
@@ -16,6 +17,10 @@ const router = createBrowserRouter([
                     {
                         path: '/',
                         element: <Home />
+                    },
+                    {
+                        path: '/expense',
+                        element: <ExpenseDashboard />
                     }
                 ]
             }

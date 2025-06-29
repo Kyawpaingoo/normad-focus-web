@@ -1,19 +1,20 @@
-import axios, { type AxiosResponse } from "axios"
-import type { LoginRequestDto, LoginResponseDto, RegisterResponseDto, RegisterRequestDto, User } from "../dtos/authDtos";
+import api from "./axios";
+import { type AxiosResponse } from "axios"
+import type { LoginRequestDto, RegisterResponseDto, RegisterRequestDto, User } from "../dtos/authDtos";
 import type { errorResponseDto, successResponseDto } from "../dtos/responseDtos";
 
-// export const refreshAccessToken = async () : Promise<{accessToken: string, refreshToken: string} | null> => {
-//     const response: AxiosResponse<successResponseDto<User>, errorResponseDto> = await axios.get('/auth/refresh-token',{
-//         withCredentials: true
-//     });
-//     if(response.status !== 200) return null;
+export const refreshAccessToken = async () : Promise<User | null> => {
+    const response: AxiosResponse<successResponseDto<User>, errorResponseDto> = await api.get('/auth/refresh-token',{
+        withCredentials: true
+    });
+    if(response.status == 200) return response.data.data;
     
-//     return response.data.data;
-// }
+    throw new Error(response.data.msg);
+}
 
-export const login = async (data: LoginRequestDto): Promise<LoginResponseDto> => {
+export const login = async (data: LoginRequestDto): Promise<User> => {
     const request = JSON.stringify(data);
-    const response: AxiosResponse<successResponseDto<LoginResponseDto>, errorResponseDto> = await axios.post('/auth/login', request, { 
+    const response: AxiosResponse<successResponseDto<User>, errorResponseDto> = await api.post('/auth/login', request, { 
         headers: { 
             'Content-Type': 'application/json' 
         }
@@ -25,7 +26,7 @@ export const login = async (data: LoginRequestDto): Promise<LoginResponseDto> =>
 
 export const register = async (data: RegisterRequestDto): Promise<RegisterResponseDto> => {
     const request = JSON.stringify(data);
-    const response: AxiosResponse<successResponseDto<RegisterResponseDto>, errorResponseDto> = await axios.post('/auth/register', request, { 
+    const response: AxiosResponse<successResponseDto<RegisterResponseDto>, errorResponseDto> = await api.post('/auth/register', request, { 
         headers: { 
             'Content-Type': 'application/json' 
         }
@@ -37,13 +38,7 @@ export const register = async (data: RegisterRequestDto): Promise<RegisterRespon
 }
 
 export const verfiyUser = async(): Promise<User | null> => {
-    // const token: string | null = getToken();
-    // const headers = token
-    //     ? { Authorization: `Bearer ${token}` }
-    //     : {}; 
-    // console.log(headers)
-    const response: AxiosResponse<successResponseDto<User>, errorResponseDto> = await axios.get('/auth/verify-user', {
-       // headers: headers,
+    const response: AxiosResponse<successResponseDto<User>, errorResponseDto> = await api.get('/auth/verify-user', {
         withCredentials: true,
         validateStatus: (status) => status === 200 || status === 403
     });
@@ -55,8 +50,3 @@ export const verfiyUser = async(): Promise<User | null> => {
     throw new Error(response.data.msg);
 }
 
-// const getToken = (): string | null => {
-//     const token: string | null = localStorage.getItem('accessToken');
-
-//     return token;
-// }

@@ -3,11 +3,12 @@ import { useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useThemeHook } from "../Context/Theme";
 import { useMutation } from "@tanstack/react-query";
-import type { LoginRequestDto, LoginResponseDto } from "../dtos/authDtos";
+import type { LoginRequestDto, User } from "../dtos/authDtos";
 import {login} from '../ApiRequestHelpers/authApiRequest';
 import { Alert, Box, Button, Checkbox, FormControlLabel, Grid, InputAdornment, IconButton, Link, Paper, TextField, Typography } from "@mui/material";
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
+import { queryClient } from "../Hooks/QueryClient";
 
 const Login: React.FC = () => {
     const emailInput : React.RefObject<HTMLInputElement | null> = useRef<HTMLInputElement>(null);
@@ -35,15 +36,16 @@ const Login: React.FC = () => {
 
     const handleTogglePassword = () => setShowPassword((show) => !show);
 
-    const loginRequest = useMutation<LoginResponseDto, Error, LoginRequestDto>({
+    const loginRequest = useMutation<User, Error, LoginRequestDto>({
         mutationFn: async (data: LoginRequestDto) => await login(data),
         onError: async () => {
             setError("Incorrect email or password.");
         },
 
-        onSuccess: async (data: LoginResponseDto) => {
+        onSuccess: async (data: User) => {
             //console.log(data)
             setAuth(data);
+            await queryClient.invalidateQueries({ queryKey: ['auth', 'user'] });
             navigate('/');
         }
     });

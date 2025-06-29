@@ -18,7 +18,7 @@ const MainLayout: React.FC = () => {
         <Box>
             <Header mode={mode} handleToggleTheme={toggleTheme} handleToggleDrawer={handleDrawerToggle} />
             <AppDrawer open={drawerOpen} onClose={handleDrawerToggle} />
-            <Container maxWidth='sm' sx={{mt:8}}>
+            <Container maxWidth='xl' sx={{mt:2}}>
                 <Outlet />
             </Container>
         </Box>

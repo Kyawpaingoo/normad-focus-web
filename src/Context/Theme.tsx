@@ -1,28 +1,26 @@
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { createContext, useContext, useEffect, useMemo, useState } from "react";
+import { createContext, useContext, useMemo, useState } from "react";
 import { CssBaseline, type PaletteMode, ThemeProvider, createTheme } from "@mui/material";
 import { grey } from "@mui/material/colors";
 import { RouterProvider } from "react-router-dom";
 import router from '../Routers';
-import type { LoginResponseDto } from "../dtos/authDtos";
+import type { User } from "../dtos/authDtos";
 import axios from "axios";
-import { verfiyUser } from '../ApiRequestHelpers/authApiRequest';
+import { useVerifyUser } from "../Hooks/useVerifyUser";
 
 interface ThemeContextProps {
     toggleTheme: ()=> void;
     mode: PaletteMode;
-    setAuth: (user: LoginResponseDto) => void;
-    auth: LoginResponseDto | null
+    auth: User | null
+    setAuth: (user: User | null) => void
 }
 
 const ThemeContext = createContext<ThemeContextProps>({
     toggleTheme: () => {},
     mode: 'light',
-    setAuth: () => {},
     auth: null,
+    setAuth: () => {}
 });
 
-export const queryClient = new QueryClient();
 
 export const useThemeHook = () => {
     const context = useContext(ThemeContext);
@@ -34,28 +32,15 @@ export const useThemeHook = () => {
 
 const App: React.FC = () => {
     const [mode, setMode] = useState<PaletteMode>('light');
-    const [auth, setAuth] = useState<LoginResponseDto | null>(null);
-    const [loading, setLoading] = useState(true);
+   // const [auth, setAuth] = useState<User | null>(null);
+    const {data: user, isLoading} = useVerifyUser();
+   // const [loading, setLoading] = useState(true);
 
     const toggleTheme = () => {
         setMode((prevMode) => (prevMode === "light" ? "dark" : "light"));
     };
 
     axios.defaults.withCredentials = true;
-
-    
-    useEffect(()=> {
-        const initializeAuth = async () => {
-            const response = await verfiyUser();
-            if(response)
-            {
-                setAuth({username: response.name, userId: response.id, email: response.email});
-            }
-            setLoading(false);
-        }
-        initializeAuth(); 
-    },[])
-
 
     const theme = useMemo(() => {
         return createTheme({
@@ -73,25 +58,25 @@ const App: React.FC = () => {
         });
     }, [mode]);
 
-    if(loading) return <div>Loading...</div>;
+    if(isLoading) return <div>Loading...</div>;
 
     return (
-        <ThemeProvider theme={theme}>
-            <ThemeContext.Provider
-                value={{
-                    toggleTheme,
-                    mode: mode,
-                    auth: auth,
-                    setAuth: setAuth,
-                }}
-            > 
-                <QueryClientProvider client={queryClient}>
-                    <CssBaseline />
-                    <RouterProvider router={router} />
-                </QueryClientProvider> 
-                
-            </ThemeContext.Provider>
-        </ThemeProvider>
+            <ThemeProvider theme={theme}>
+                <ThemeContext.Provider
+                    value={{
+                        toggleTheme,
+                        mode: mode,
+                        auth: user ? {name: user.name, id: user.id, email: user.email} : null,
+                        setAuth: () => {}
+                    }}
+                > 
+                    
+                        <CssBaseline />
+                        <RouterProvider router={router} />
+                    
+                    
+                </ThemeContext.Provider>
+            </ThemeProvider>
     )
 }
 

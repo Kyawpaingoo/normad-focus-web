@@ -16,12 +16,6 @@ export type LoginRequestDto = {
     password: string;
 }
 
-export type LoginResponseDto = {
-    userId: number;
-    username: string | null;
-    email: string | null;
-}
-
 export type User = {
     name: string | null;
     id: number;
