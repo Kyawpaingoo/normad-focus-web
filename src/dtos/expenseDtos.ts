@@ -24,6 +24,34 @@ export type ExpenseDto = {
     is_deleted: boolean | null;
 }
 
+export type ExpenseBreakdownDto = {
+  total: number;
+    change: number;
+    categories: CategoryDto[];
+}
+
+export type CategoryDto = {
+    label: string | null;
+    value: number;
+}
+
+export type IncomeVSExpenseDto = {
+  total: number;
+  change: number;
+  months: string[];
+  values: number[];
+}
+
+export type AdditionalData = {
+  expenseBreakdown: ExpenseBreakdownDto;
+  incomeVsExpense: IncomeVSExpenseDto;
+}
+
+export type deleteData = {
+    id: number,
+    userId: number
+}
+
 export interface ExpenseFormState {
   title: string;
   amount: number;
@@ -32,3 +60,4 @@ export interface ExpenseFormState {
   currency: string;
   date: string; // ISO string
 }
+

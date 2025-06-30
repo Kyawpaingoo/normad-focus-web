@@ -1,145 +1,52 @@
-import { Alert, Box, Button, Grid, Pagination, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography } from "@mui/material";
-//import { expenseIncomeData } from "../DummyData/expenseData";
-import ExpenseBreakdownCard from "../../Components/ExpenseBreakdownCard";
-import IncomeVsExpenseCard from "../../Components/IncomeVsExpenseCard";
-import React, { useState } from "react";
-import { styled } from '@mui/material/styles';
-import { useMutation, useQuery } from "@tanstack/react-query";
-import { createExpense, getExpenseByPaging, softDeleteExpense, updateExpense } from '../../ApiRequestHelpers/expenseApiRequest';
-import type { PaginationResponse, sortDirection } from "../../dtos/responseDtos";
-import type { ExpenseDto, upsertExpenseRequestDto } from "../../dtos/expenseDtos";
-import dayjs from 'dayjs'
-import { queryClient } from "../../Hooks/QueryClient";
+import { 
+    Alert, 
+    Box, 
+    Button, 
+    Typography
+} from "@mui/material";
+
+import React, { useMemo, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { getExpenseByPaging } from "../../ApiRequestHelpers/expenseApiRequest";
+import type { PaginationResponse } from "../../dtos/responseDtos";
+import type { AdditionalData, ExpenseDto, upsertExpenseRequestDto, deleteData } from "../../dtos/expenseDtos";
+import { useThemeHook } from "../../Context/Theme";
 import PopupModal from "../../Components/Modal";
 import ExpenseForm from "./ExpenseForm";
-import { useThemeHook } from "../../Context/Theme";
-
- type deleteData = {
-    id: number,
-    userId: number
-}
-
-const Item = styled(Paper)(({ theme }) => ({
-  backgroundColor: '#fff',
-  ...theme.typography.body2,
-  padding: theme.spacing(2),
-  textAlign: 'center',
-  color: (theme.vars ?? theme).palette.text.secondary,
-  ...theme.applyStyles('dark', {
-    backgroundColor: '#1A2027',
-  }),
-}));
+import { useExpenseFilter } from "../../Hooks/useExpenseFilters";
+import { useExpenseMutations } from "../../Hooks/useExpenseMutation";
+import ExpenseFilters from "../../Components/ExpenseComponents/ExpenseFilters";
+import ExpenseStatsCards from "../../Components/ExpenseComponents/ExpenseStatsCards";
+import ExpenseTable from "../../Components/ExpenseComponents/ExpenseTable";
 
 const ExpenseDashboard : React.FC = () => {
+    
     const {auth} = useThemeHook();
-    const [page, setPage] = useState(1);
-    const [pageSize, setPageSize] = useState(10);
-    const [year, setYear] = useState(2025);
-    const [month, setMonth] = useState(6);
-    const [category, setCategory] = useState<string | undefined>(undefined);
-    const [type, setType] = useState<string | undefined>(undefined);
-    const [sortDir, setSortDir] = useState<sortDirection>('desc');
+    const {filters, setters, handlers, utils} = useExpenseFilter();
 
-    const [message, setMessage] = useState<string | null>(null);
+    //const [message, setMessage] = useState<string | null>(null);
     
     const [deleteId, setDeleteId] = useState<deleteData | null>(null);
     const [expenseForm, setExpenseForm] = useState<upsertExpenseRequestDto | null>(null);
-
     const [isDeleteModalOpen, setDeleteModalOpen] = useState<boolean>(false);
     const [isExpenseFormModalOpen, setExpenseFormModalOpen] = useState<boolean>(false);
-
-    const queryKey = ['expense', page, pageSize, year, month, category ?? null, type ?? null, sortDir] as const;
+    
+    const queryKey = ['expense', filters.page, filters.pageSize, filters.year, filters.month, filters.searchQuery, filters.category ?? null, filters.type ?? null, filters.sortDir] as const;
     
     const {isLoading, isError, data, error} = useQuery<PaginationResponse<ExpenseDto>, Error>({
         queryKey: queryKey,
-        queryFn: async () => await getExpenseByPaging(page, pageSize, auth.id, 2025, 6, 'desc'),
+        queryFn: async () => await getExpenseByPaging(filters.page, filters.pageSize, auth.id, filters.year ?? 2025, filters.month ?? 6, filters.sortDir ?? 'desc', filters.searchQuery ?? '', filters.category ?? '', filters.type ?? ''),
     });
 
-    const addExpense = useMutation<ExpenseDto, Error, upsertExpenseRequestDto>({
-        mutationFn: async (data: upsertExpenseRequestDto) => {
-            const expenseWithUserId = {
-                ...data,
-                userId: auth.id
-            }
-            return await createExpense(expenseWithUserId)
-        },
-        onMutate: async (newExpense: upsertExpenseRequestDto) => {
-            queryClient.cancelQueries({queryKey});
-            const previousData = queryClient.getQueryData(queryKey);
+    const { addExpense, editExpense, removeExpense } = useExpenseMutations(queryKey, filters.page, filters.pageSize, auth.id);
 
-            if(previousData)
-            {
-                queryClient.setQueryData(queryKey, (oldData: PaginationResponse<ExpenseDto>) => {
-                    return {
-                        ...oldData,
-                        results: [
-                            {...newExpense, id: Date.now()}, 
-                            ...oldData.results]
-                    }
-                });
-            }
-        },
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey });
-        },
-
-        onError: () => {
-            queryClient.setQueryData(['expense', page, pageSize], (oldData: PaginationResponse<ExpenseDto>) => {
-                if(!oldData) return oldData;
-            });
-        }
-    });
-
-    const editExpense = useMutation<ExpenseDto, Error, { data: upsertExpenseRequestDto, id: number, userId: number }>({
-        mutationFn: async ({ data, id, userId }) => await updateExpense(data, id, userId),
-        onMutate: async ({ data, id }: { data: upsertExpenseRequestDto, id: number, userId: number }) => {
-            queryClient.cancelQueries({queryKey});
-            const previousData = queryClient.getQueryData(['expense', page, pageSize]);
-
-            if(previousData)
-            {
-                queryClient.setQueryData(['expense', page, pageSize], (oldData: PaginationResponse<ExpenseDto>) => {
-                    return {
-                        ...oldData,
-                        results: oldData.results.map((expense: ExpenseDto) => expense.id === id ? data : expense)
-                    }
-                });
-            }
-        },
-        onSuccess: () => {
-            queryClient.invalidateQueries({queryKey});
-        },
-        onError: () => {
-            queryClient.setQueryData(['expense', page, pageSize], (oldData: PaginationResponse<ExpenseDto>) => {
-                if(!oldData) return oldData;
-            });
-        }
-    })
-
-    const removeExpense = useMutation<string, Error, { id: number, userId: number }>(
-        {
-            mutationFn: async ({ id, userId }) => await softDeleteExpense(id, userId),
-            onMutate: async ({ id }: { id: number, userId: number }) => {
-                queryClient.cancelQueries({queryKey});
-                const previousData = queryClient.getQueryData(['expense', page, pageSize]);
-
-                if(previousData)
-                {
-                    queryClient.setQueryData(['expense', page, pageSize], (oldData: PaginationResponse<ExpenseDto>) => {
-                        return {
-                            ...oldData,
-                            results: oldData.results.filter((expense: ExpenseDto) => expense.id !== id)
-                        }
-                    });
-                }
-            },
-            onSuccess: () => {
-                queryClient.invalidateQueries({queryKey});
-            }
-        },
-    );
-
-    
+    const additionalData = useMemo<AdditionalData | null>(()=> {
+        if(data?.additionalData) {
+            return JSON.parse(data.additionalData) as AdditionalData; 
+        }  
+        return null
+    }, [data?.additionalData]);
+  
     const handleDelete = async () => {
         if(deleteId)
         {
@@ -218,71 +125,27 @@ const ExpenseDashboard : React.FC = () => {
                 </Button>
             </Box>
 
-            <Grid container spacing={2} sx={{mb:3}}>
-                <Grid size={4}>
-                    <Item>
-                        <ExpenseBreakdownCard />
-                    </Item>
-                    
-                </Grid>
+            {
+                additionalData && (
+                    <ExpenseStatsCards additionalData={additionalData} />
+                )
+            }
 
-                <Grid size={4}>
-                    <Item>
-                        <IncomeVsExpenseCard />
-                    </Item>
-                </Grid>
-            </Grid>
-
-            <Paper elevation={0} sx={{borderRadius: 2, border: '1px solid #E7EAEE', p: 2}}>
-                <Typography variant="h6" sx={{mb: 2, fontWeight: 700}}>
-                    Expense & Income
-                </Typography>
-
-                <TableContainer>
-                    <Table size="small">
-                        <TableHead>
-                            <TableRow>
-                                <TableCell>Date</TableCell>
-                                <TableCell>Title</TableCell>
-                                <TableCell>Category</TableCell>
-                                <TableCell>Currency</TableCell>
-                                <TableCell>Amount</TableCell>
-                                <TableCell>Type</TableCell>
-                                <TableCell>Actions</TableCell>
-                            </TableRow>
-                        </TableHead>
-
-                        <TableBody>
-                            {data?.results.map((row) => (
-                                <TableRow key={row.id}>
-                                    <TableCell>{dayjs(row.expense_date).format('YYYY-MM-DD')}</TableCell>
-                                    <TableCell>{row.category}</TableCell>
-                                    <TableCell>{row.title}</TableCell>
-                                    <TableCell>{row.currency}</TableCell>
-                                    <TableCell>{row.amount}</TableCell>
-                                    <TableCell>{row.type}</TableCell>
-                                    <TableCell>
-                                        <Button variant="text" color="primary" sx={{ mr: 1 }} onClick={()=>showExpenseFormModal(row)}>View Details</Button>
-                                        |
-                                        <Button variant="text" color="error" sx={{ ml: 1 }}  onClick={()=>showDeleteModal({ id: row.id, userId: row.user_id })}>Delete</Button>
-                                    </TableCell>
-                                </TableRow>
-                            ))}
-                        </TableBody>
-                    </Table>
-                </TableContainer>
-
-                <Box display='flex' justifyContent={'center'} sx={{mt: 2}}>
-                    <Pagination 
-                        count={data?.totalPage}
-                        page={page}
-                        onChange={(e, value) => setPage(value)}
-                        shape="rounded"
-                        showFirstButton
-                        showLastButton
-                    />
-                </Box>
-            </Paper>
+            <ExpenseFilters 
+                filters={filters}
+                handlers={handlers}
+                setShowFilters={setters.setShowFilters}
+                getActiveFiltersCount={utils.getActiveFiltersCount}
+            />
+            
+            <ExpenseTable
+                expenses={data?.results || []}
+                totalPages={data?.totalPage || 0}
+                currentPage={filters.page}
+                onPageChange={setters.setPage}
+                onViewDetails={showExpenseFormModal}
+                onDelete={showDeleteModal}
+            />
 
             <PopupModal open={isDeleteModalOpen} onClose={closeDeleteModal} onConfirm={handleDelete} title='Delete Expense'>
                 <Typography>Are you sure you want to delete this item</Typography>
