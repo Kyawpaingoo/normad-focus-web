@@ -12,7 +12,7 @@ interface ExpenseFormProps {
 
 const defaultExpense: upsertExpenseRequestDto = {
   id: 0,
-  userId: 8,
+  userId: 0,
   title: '',
   amount: 0,
   category: '',
@@ -29,7 +29,7 @@ const ExpenseForm : React.FC<ExpenseFormProps> = ({open, onClose, onSubmit, defa
     useEffect(() => {
         setForm({
             id: defaultValues?.id || 0,
-            userId: defaultValues?.userId || 8,
+            userId: defaultValues?.userId || 0,
             title: defaultValues?.title || '',
             amount: defaultValues?.amount || 0,
             category: defaultValues?.category || '',
@@ -92,7 +92,7 @@ const ExpenseForm : React.FC<ExpenseFormProps> = ({open, onClose, onSubmit, defa
                     onChange={(e) => handleChange('category', e.target.value)}
                 />
 
-                <TextField id="expense-type-select" select label="Expense Type" value={form.type} >
+                <TextField id="expense-type-select" select label="Expense Type" value={form.type} onChange={(e)=> handleChange('type', e.target.value)}>
                     <MenuItem value="Income">Income</MenuItem>
                     <MenuItem value="Expense">Expense</MenuItem>
                 </TextField>
@@ -125,7 +125,7 @@ const ExpenseForm : React.FC<ExpenseFormProps> = ({open, onClose, onSubmit, defa
                 />
             </Stack>
 
-             <Stack direction={'row'} spacing={2} mt={2} justifyContent={'flex-end'}>
+            <Stack direction={'row'} spacing={2} mt={2} justifyContent={'flex-end'}>
                 <Button variant="contained" onClick={onClose}>Cancel</Button>
                 <Button variant="contained" onClick={handleSave}>Confirm</Button>
             </Stack>

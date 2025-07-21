@@ -1,6 +1,6 @@
 import api from './axios';
 import { type AxiosResponse } from 'axios';
-import type { errorResponseDto, successResponseDto, sortDirection, PaginationResponse } from '../dtos/responseDtos';
+import type { errorResponseDto, successResponseDto, sortDirection, ViewMode, FlexibleResponse } from '../dtos/responseDtos';
 import type { upsertTaskDto, TaskDto } from '../dtos/taskDto';
 
 export const createTask = async (data: upsertTaskDto): Promise<TaskDto> => {
@@ -24,10 +24,11 @@ export const getTask = async (id: number, userId: number): Promise<TaskDto> => {
     throw new Error(response.data.msg);
 }
 
-export const getTaskByPaging = async(page: number, pageSize: number, userId: number, year: number, month: number, sortDir: sortDirection = 'desc', q?: string | undefined, status?: string, priority?: string | undefined): Promise<PaginationResponse<TaskDto>> => {
+export const getTaskByView = async(viewMode: ViewMode = 'board', cursor: string | null, limit: number, userId: number, year: number, month: number, sortDir: sortDirection = 'desc', q?: string, status?: string, priority?:string): Promise<FlexibleResponse<TaskDto>> => {
     const params = new URLSearchParams({
-        page: page.toString(),
-        pageSize: pageSize.toString(),
+        viewMode: viewMode,
+        cursor: cursor || '',
+        limit: limit.toString(),
         userId: userId.toString(),
         year: year.toString(),
         month: month.toString(),
@@ -38,7 +39,7 @@ export const getTaskByPaging = async(page: number, pageSize: number, userId: num
     if(status) params.append('status', status);
     if(priority) params.append('priority', priority);
 
-    const response: AxiosResponse<successResponseDto<PaginationResponse<TaskDto>>, errorResponseDto> = await api.get(`/task/get-by-paging?${params.toString()}`);
+    const response: AxiosResponse<successResponseDto<FlexibleResponse<TaskDto>>, errorResponseDto> = await api.get(`/task/get-by-view?${params.toString()}`);
 
     if(response.status == 200) return response.data.data;
 

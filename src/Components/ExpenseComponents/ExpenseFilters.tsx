@@ -18,7 +18,7 @@ import {
 import { FilterList, ExpandMore, ExpandLess, Clear } from "@mui/icons-material";
 import { styled } from '@mui/material/styles';
 import type { sortDirection } from "../../dtos/responseDtos";
-import { pageSizeOptions, categoryOptions, typeOptions, monthOptions } from '../../ultiData/expenseData';
+import { pageSizeOptions, categoryOptions, typeOptions, monthOptions } from '../../Ultils/expenseData';
 
 interface ExpenseFiltersProps {
     filters: {

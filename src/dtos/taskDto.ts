@@ -1,12 +1,13 @@
 export type upsertTaskDto = {
+    id: number,
     userId: number,
-    title: string,
-    description: string,
+    title: string | null,
+    description: string | null,
     status: 'To Do' | 'In Progress' | 'Done',
     priority: 'High' | 'Medium' | 'Low',
-    start_date: Date,
-    due_date: Date,
-    notify_at: Date
+    start_date: Date | null,
+    due_date: Date | null,
+    notify_at: Date | null
 }
 
 export type TaskDto = {
@@ -17,8 +18,8 @@ export type TaskDto = {
     is_deleted: boolean | null;
     notify_at: Date | null;
     description: string | null;
-    status: string | null;
-    priority: string | null;
+    status: 'To Do' | 'In Progress' | 'Done';
+    priority: 'High' | 'Medium' | 'Low';
     start_date: Date | null;
     due_date: Date | null;
 }
