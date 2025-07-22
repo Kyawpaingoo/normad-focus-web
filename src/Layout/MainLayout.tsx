@@ -14,6 +14,8 @@ const MainLayout: React.FC = () => {
     const handleDrawerToggle = () => {
         setDrawerOpen(prev => !prev);
     };
+
+    
     return (
         <Box>
             <Header mode={mode} handleToggleTheme={toggleTheme} handleToggleDrawer={handleDrawerToggle} />

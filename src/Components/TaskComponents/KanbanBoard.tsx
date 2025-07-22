@@ -1,22 +1,24 @@
 import type React from "react";
 import type { KanbanResponse } from "../../dtos/responseDtos";
-import type { TaskDto } from "../../dtos/taskDto";
+import type { TaskDto, TaskStatus } from "../../dtos/taskDto";
 import {
-  Box,
-  Card,
-  CardContent,
-  Typography,
-  Chip,
-  IconButton,
-  Paper,
-  Tooltip,
-  Badge
+    Box,
+    Card,
+    CardContent,
+    Typography,
+    Chip,
+    IconButton,
+    Paper,
+    Tooltip,
+    Badge,
+    Menu,
+    MenuItem
 } from '@mui/material';
 import {
-  Add,
-  CalendarToday,
-  DragIndicator,
-  MoreVert
+    Add,
+    CalendarToday,
+    DragIndicator,
+    MoreVert
 } from '@mui/icons-material';
 import { styled } from '@mui/material/styles';
 import dayjs from "dayjs";
@@ -25,6 +27,14 @@ import { useState } from "react";
 interface KanbanBoardProps {
     taskList: KanbanResponse<TaskDto>
     showViewModal: (data: TaskDto | null) => void;
+    showDeleteModal: (data: TaskDto) => void;
+    onUpdateTaskStatus: (taskId: number, newStatus: TaskStatus, userId: number) => void;
+}
+
+interface TaskCareMenuProps {
+    task: TaskDto;
+    showViewModal: (data: TaskDto | null) => void;
+    showDeleteModal: (data: TaskDto) => void;
 }
 
 interface TaskCradProps {
@@ -32,19 +42,22 @@ interface TaskCradProps {
     onDragStart: (e: React.DragEvent, task: TaskDto) => void;
     isDragging: boolean
     showViewModal: (data: TaskDto | null) => void;
+    showDeleteModal: (data: TaskDto) => void;
 }
 
 interface KanbanColumnProps {
     title: string;
     tasks: TaskDto[];
     totalCount: number;
-    onDrop: (e: React.DragEvent, status: string) => void;
+    onDrop: (e: React.DragEvent, status: TaskStatus) => void;
     onDragOver: (e: React.DragEvent) => void;
     onDragStart: (e: React.DragEvent, task: TaskDto) => void;
-    status: string;
+    status: TaskStatus;
     draggedTask: TaskDto | null;
     isDragOver: boolean;
     showViewModal: (data: TaskDto | null) => void;
+    showDeleteModal: (data: TaskDto) => void;
+    onAddTask: (status: TaskStatus) => void;
 }
 
 interface TaskCardStyledProps {
@@ -85,26 +98,102 @@ const ColumnPaper = styled(Paper, {
     width: '320px',
     backgroundColor: isDragOver ? theme.palette.action.hover : theme.palette.background.default,
     transition: 'background-color 0.2s ease',
-    border: isDragOver ? `2px dashed ${theme.palette.primary.main}` : '1px solid transparent',
+    border: isDragOver ? `2px dashed ${theme.palette.primary.main}` : '1px solid #EAEAEA',
 }));
 
 const getPriorityColor = (priority: string | null) => {
     switch (priority) {
-        case 'high': return 'error';
-        case 'medium': return 'warning';
-        case 'low': return 'success';
+        case 'High': return 'error';
+        case 'Medium': return 'warning';
+        case 'Low': return 'success';
         default: return 'default';
     }
 };
 
-const TaskCard: React.FC<TaskCradProps> = ({task, onDragStart, isDragging, showViewModal}) => {
+const getStatusFromColumnKey = (columnKey: string): TaskStatus => {
+    switch (columnKey) {
+        case 'todo': return 'To Do';
+        case 'in_progress': return 'In Progress';
+        case 'done': return 'Done';
+        default: return columnKey as TaskStatus;
+    }
+};
+
+const TaskCardMenu: React.FC<TaskCareMenuProps> = ({task, showViewModal, showDeleteModal}) => {
+    const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+    const open = Boolean(anchorEl);
+    const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+        event.stopPropagation();
+        setAnchorEl(event.currentTarget);
+    }
+
+    const handleClose = (event?: React.MouseEvent) => {
+        if (event) event?.stopPropagation();
+        setAnchorEl(null);
+    }
+
+    const handleEditMenu = (event: React.MouseEvent, taskData: TaskDto | null) => {
+        event.stopPropagation();
+        showViewModal(taskData);
+        handleClose();
+    }
+
+    const handleDeleteMenu = (event: React.MouseEvent, taskData: TaskDto) => {
+        event.stopPropagation();
+        showDeleteModal(taskData);
+        handleClose();
+    }
+
+    return (
+        <>
+            <IconButton id="task-card-menu-button" size="small" sx={{ padding: 0.5 }} aria-controls={open ? 'basic-menu' : undefined}
+                aria-haspopup="true"
+                aria-expanded={open ? 'true' : undefined} onClick={handleClick}>
+                <MoreVert />
+            </IconButton>
+            <Menu
+                id="task-card-menu"
+                anchorEl={anchorEl}
+                open={open}
+                onClose={handleClose}
+                 slotProps={{
+                    list: {
+                        'aria-labelledby': 'task-card-menu-button',
+                    },
+                }}
+            >
+                <MenuItem onClick={(e) => handleEditMenu(e, task)}>Edit</MenuItem>
+                <MenuItem onClick={(e) => handleDeleteMenu(e, task)}>Delete</MenuItem>
+            </Menu>
+        </>
+    )
+}
+
+const TaskCard: React.FC<TaskCradProps> = ({task, onDragStart, isDragging, showViewModal, showDeleteModal}) => {
+
+    const handleDragStart = (e: React.DragEvent) => {
+        // Store both task data and task ID for easier retrieval
+        e.dataTransfer.setData('application/json', JSON.stringify(task));
+        e.dataTransfer.setData('text/plain', task.id.toString());
+        e.dataTransfer.effectAllowed = 'move';
+        onDragStart(e, task);
+    }
+
+    const handleClick = (e: React.MouseEvent) => {
+        if(isDragging) {
+            e.preventDefault();
+            e.stopPropagation();
+            return;
+        }
+        showViewModal(task);
+    }
     return(
         <TaskCardStyled
             draggable
-            onDragStart={(e) => onDragStart(e, task)}
+            onDragStart={handleDragStart}
             isDragging={isDragging}
             elevation={isDragging ? 6 : 2}
-            onClick={()=> showViewModal(task)}
+            onClick={handleClick}
         >
             <CardContent sx={{ padding: 2, '&:last-child': { paddingBottom: 2 } }}>
                 <Box display="flex" alignItems="flex-start" justifyContent="space-between" mb={1}>
@@ -112,9 +201,7 @@ const TaskCard: React.FC<TaskCradProps> = ({task, onDragStart, isDragging, showV
                     <Typography variant="subtitle2" fontWeight="medium" sx={{ flex: 1, mx: 1 }}>
                         {task.title || 'Untitled Task'}
                     </Typography>
-                    <IconButton size="small" sx={{ padding: 0.5 }}>
-                        <MoreVert fontSize="small" />
-                    </IconButton>
+                    <TaskCardMenu task={task} showViewModal={showViewModal} showDeleteModal={showDeleteModal} />
                 </Box>
                     
                 <Box display="flex" justifyContent="space-between" alignItems="center" mb={1}>
@@ -156,7 +243,7 @@ const TaskCard: React.FC<TaskCradProps> = ({task, onDragStart, isDragging, showV
     )
 }
 
-const KanbanColumn: React.FC<KanbanColumnProps> =({title, tasks, totalCount, onDrop, onDragOver, onDragStart, status, draggedTask, isDragOver, showViewModal}) => {
+const KanbanColumn: React.FC<KanbanColumnProps> =({title, tasks, totalCount, onDrop, onDragOver, onDragStart, status, draggedTask, isDragOver, showViewModal, showDeleteModal, onAddTask}) => {
     return (
         <ColumnPaper
             elevation={1}
@@ -172,7 +259,7 @@ const KanbanColumn: React.FC<KanbanColumnProps> =({title, tasks, totalCount, onD
                     <Badge badgeContent={totalCount} color="primary" />
                 </Box>
                 <Tooltip title="Add new task">
-                    <IconButton size="small" color="primary">
+                    <IconButton size="small" color="primary" onClick={() => onAddTask(status)}>
                         <Add />
                     </IconButton>
                 </Tooltip>
@@ -186,6 +273,7 @@ const KanbanColumn: React.FC<KanbanColumnProps> =({title, tasks, totalCount, onD
                     onDragStart={onDragStart}
                     isDragging={draggedTask?.id === task.id}
                     showViewModal={showViewModal}
+                    showDeleteModal={showDeleteModal}
                 />
                 ))}
             </Box>
@@ -193,7 +281,7 @@ const KanbanColumn: React.FC<KanbanColumnProps> =({title, tasks, totalCount, onD
     );
 }
 
-const KanbanBoard: React.FC<KanbanBoardProps> = ({taskList, showViewModal}) => {
+const KanbanBoard: React.FC<KanbanBoardProps> = ({taskList, showViewModal, showDeleteModal, onUpdateTaskStatus}) => {
     const [draggedTask, setDraggedTask] = useState<TaskDto | null>(null);
     const [dragOverColumn, setDragOverColumn] = useState<string | null>(null);
 
@@ -209,67 +297,98 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({taskList, showViewModal}) => {
         e.dataTransfer.dropEffect = 'move';
     };
 
-    const handleDragEnter = (status: string) => {
-        setDragOverColumn(status);
+    const handleDragEnter = (columnKey: string) => {
+        setDragOverColumn(columnKey);
     };
 
-    const handleDragLeave = () => {
-        setDragOverColumn(null);
+    const handleDragLeave = (e: React.DragEvent) => {
+        const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+        const x = e.clientX;
+        const y = e.clientY;
+        
+        if (x < rect.left || x > rect.right || y < rect.top || y > rect.bottom) {
+            setDragOverColumn(null);
+        }
     };
 
-    const handleDrop = (e: React.DragEvent, newStatus: string) => {
+    const handleDrop = (e: React.DragEvent, newStatus: TaskStatus) => {
         e.preventDefault();
         setDragOverColumn(null);
         
-        // if (!draggedTask || !kanbanData) return;
+        if (!draggedTask) {
+            try {
+                const taskData = e.dataTransfer.getData('application/json');
+                if (taskData) {
+                    const task = JSON.parse(taskData) as TaskDto;
+                    if (task.status !== newStatus) {
+                        onUpdateTaskStatus(task.id, newStatus, task.user_id);
+                    }
+                }
+            } catch (error) {
+                console.error('Failed to parse dragged task data:', error);
+            }
+            return;
+        }
 
-        // const updatedTask = { ...draggedTask, status: newStatus };
-        
-        // Create new kanban data with updated task
-        //const newKanbanData = { ...kanbanData };
-        
-        // Remove task from old column
-        // Object.keys(newKanbanData.columns).forEach(columnKey => {
-        //     newKanbanData.columns[columnKey].items = newKanbanData.columns[columnKey].items.filter(
-        //         task => task.id !== draggedTask.id
-        //     );
-        //     newKanbanData.columns[columnKey].totalCount = newKanbanData.columns[columnKey].items.length;
-        // });
-        
-        // // Add task to new column
-        // if (newKanbanData.columns[newStatus]) {
-        //     newKanbanData.columns[newStatus].items.push(updatedTask);
-        //     newKanbanData.columns[newStatus].totalCount = newKanbanData.columns[newStatus].items.length;
-        // }
-        
-        // setKanbanData(newKanbanData);
-        setDraggedTask(null);
+        if (draggedTask.status === newStatus) {
+            setDraggedTask(null);
+            return;
+        }
+
+        try {
+            onUpdateTaskStatus(draggedTask.id, newStatus, draggedTask.user_id);
+        } catch (error) {
+            console.error('Failed to update task status:', error);
+        } finally {
+            setDraggedTask(null);
+        }
     }
+
+     const handleAddTask = (status: TaskStatus) => {
+        const newTask: Partial<TaskDto> = {
+            id: 0, 
+            title: '',
+            description: '',
+            status: status,
+            priority: 'Low',
+            due_date: new Date(),
+            user_id: 0, 
+            created_at: new Date(),
+        };
+        
+        showViewModal(newTask as TaskDto);
+    }
+
     return (
         <Box display="flex" gap={3} sx={{ overflowX: 'auto', pb: 2 }}>
-            {Object.entries(columns).map(([status, column]) => (
-                <Box
-                    key={status}
-                    onDragEnter={() => handleDragEnter(status)}
-                    onDragLeave={handleDragLeave}
-                >
-                    <KanbanColumn
-                        title={column.title}
-                        tasks={column.items}
-                        totalCount={column.totalCount}
-                        onDrop={handleDrop}
-                        onDragOver={handleDragOver}
-                        onDragStart={handleDragStart}
-                        status={status}
-                        draggedTask={draggedTask}
-                        isDragOver={dragOverColumn === status}
-                        showViewModal={showViewModal}
-                    />
-                </Box>
-            ))}
+            {Object.entries(columns).map(([columnKey, column]) => {
+                const status = getStatusFromColumnKey(columnKey);
+
+                return(
+                    <Box
+                        key={columnKey}
+                        onDragEnter={() => handleDragEnter(columnKey)}
+                        onDragLeave={handleDragLeave}
+                    >
+                        <KanbanColumn
+                            title={column.title}
+                            tasks={column.items}
+                            totalCount={column.totalCount}
+                            onDrop={handleDrop}
+                            onDragOver={handleDragOver}
+                            onDragStart={handleDragStart}
+                            status={status}
+                            draggedTask={draggedTask}
+                            isDragOver={dragOverColumn === columnKey}
+                            showViewModal={showViewModal}
+                            showDeleteModal={showDeleteModal}
+                            onAddTask={handleAddTask}
+                        />
+                    </Box>
+                )
+            })}
         </Box>
     )
 };
-
 
 export default KanbanBoard;

@@ -7,9 +7,10 @@ import dayjs from "dayjs";
 interface TaskTableListProps {
     taskList: InfiniteScrollResponse<TaskDto>;   
     showViewDetail: (data: TaskDto | null) => void;
+    showDeleteModal: (data: TaskDto) => void;
 }
 
-const TaskTableList: React.FC<TaskTableListProps> = ({taskList, showViewDetail}) => {
+const TaskTableList: React.FC<TaskTableListProps> = ({taskList, showViewDetail, showDeleteModal}) => {
     const results = taskList?.results ?? [];
 
     return (
@@ -43,8 +44,12 @@ const TaskTableList: React.FC<TaskTableListProps> = ({taskList, showViewDetail})
                             <TableCell>{dayjs(data.due_date).format('YYYY-MM-DD')}</TableCell>
                             <TableCell>{data.priority}</TableCell>
                             <TableCell>
-                                <Button variant="contained" color="primary" onClick={()=>showViewDetail(data)}>
+                                
+                                <Button variant="contained" color="primary" sx={{mr: 1}} onClick={()=>showViewDetail(data)}>
                                     View Detail
+                                </Button>
+                                <Button variant="contained" color="error" sx={{ml: 1}} onClick={()=>showDeleteModal(data)}>
+                                    Delete
                                 </Button>
                             </TableCell>
                         </TableRow>

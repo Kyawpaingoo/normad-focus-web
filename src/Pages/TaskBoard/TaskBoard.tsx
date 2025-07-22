@@ -3,7 +3,7 @@ import { useState } from "react";
 import TaskTabNav from "../../Components/TaskComponents/TaskTabNav";
 import { useThemeHook } from "../../Context/Theme";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { type TaskDto, type upsertTaskDto} from '../../dtos/taskDto';
+import { type TaskDto, type TaskStatus, type upsertTaskDto} from '../../dtos/taskDto';
 import { createTask, getTaskByView, softDeleteTask, updateTask } from "../../ApiRequestHelpers/taskApiRequest";
 import { queryClient } from "../../Hooks/QueryClient";
 import { type sortDirection, type FlexibleResponse, type ViewMode, type KanbanResponse, } from '../../dtos/responseDtos';
@@ -13,6 +13,9 @@ import { Alert, Box, Button, Typography } from "@mui/material";
 import TaskTableList from "../../Components/TaskComponents/TaskTableList";
 import KanbanBoard from "../../Components/TaskComponents/KanbanBoard";
 import TaskForm from "./TaskForm";
+import TaskDeleteConfirmationModal from "../../Components/TaskComponents/TaskDeleteConfirmationModal";
+import MonthYearSelector from "../../Components/TaskComponents/MonthYearSelector";
+import TaskFilters from "../../Components/TaskComponents/TaskFilters";
 
 const TaskBoard: React.FC = () => {
     const {auth} = useThemeHook();
@@ -27,7 +30,17 @@ const TaskBoard: React.FC = () => {
     const [priority, setPriority] = useState<string>('');
     const [taskForm, setTaskForm] = useState<upsertTaskDto | null>(null);
     const [isTaskFormModalOpen, setTaskFormModalOpen] = useState<boolean>(false);
+    const [isDeleteModalOpen, setDeleteModalOpen] = useState<boolean>(false);
+    const [deleteTask, setDeleteTask] = useState<TaskDto | null>(null);
 
+    const getColumnKeyFromStatus = (status: TaskStatus): string => {
+    switch (status) {
+        case 'To Do': return 'todo';
+        case 'In Progress': return 'in_progress';
+        case 'Done': return 'done';
+        default: return status.toLowerCase().replace(' ', '_');
+    }
+};
 
     const queryKey = ['tasks', viewMode, cursor, limit, year, month, sortDir, searchQuery, status, priority] as const;
 
@@ -130,6 +143,101 @@ const TaskBoard: React.FC = () => {
         }
     });
 
+    const updateTaskStatus = useMutation<TaskDto, Error, {taskId: number, newStatus: TaskStatus, userId: number}>({
+        mutationFn: async({taskId, newStatus, userId}) => {
+            const currentData = queryClient.getQueryData(queryKey) as FlexibleResponse<TaskDto>;
+            let currentTask: TaskDto | undefined;
+
+            if(isKanbanResponse(currentData)) {
+                Object.values(currentData.columns).forEach(column => {
+                    const foundTask = column.items.find(task => task.id === taskId);
+
+                    if(foundTask) currentTask = foundTask;
+                })
+            }
+
+            if (!currentTask) {
+                throw new Error('Task not found');
+            }
+
+            const updateData: upsertTaskDto = {
+                id: currentTask.id,
+                userId: userId,
+                title: currentTask.title,
+                description: currentTask.description,
+                status: newStatus, 
+                priority: currentTask.priority,
+                start_date: currentTask.start_date,
+                due_date: currentTask.due_date,
+                notify_at: currentTask.notify_at
+            };
+
+            return await updateTask(updateData, taskId, userId);
+        },
+        onMutate: async({taskId, newStatus}) => {
+            queryClient.cancelQueries({queryKey});
+            const prevData = queryClient.getQueryData(queryKey);
+
+            if(prevData && isKanbanResponse(prevData)) {
+                queryClient.setQueryData(queryKey, (oldData: KanbanResponse<TaskDto>) => {
+                    const newColumns = {...oldData.columns};
+                    let taskToMove: TaskDto | undefined;
+                    let sourceColumnKey: string | undefined;
+
+                    Object.keys(newColumns).forEach(columnKey => {
+                        const taskIndex = newColumns[columnKey].items.findIndex(task => task.id === taskId);
+                        if (taskIndex !== -1) {
+                            taskToMove = { ...newColumns[columnKey].items[taskIndex], status: newStatus };
+                            sourceColumnKey = columnKey;
+                            newColumns[columnKey] = {
+                                ...newColumns[columnKey],
+                                items: newColumns[columnKey].items.filter(task => task.id !== taskId),
+                                totalCount: newColumns[columnKey].totalCount - 1
+                            };
+                        }
+                    });
+
+                    if (taskToMove) {
+                        const targetColumnKey = getColumnKeyFromStatus(newStatus);
+                        
+                        if (newColumns[targetColumnKey]) {
+                            newColumns[targetColumnKey] = {
+                                ...newColumns[targetColumnKey],
+                                items: [...newColumns[targetColumnKey].items, taskToMove],
+                                totalCount: newColumns[targetColumnKey].totalCount + 1
+                            };
+                        } else {
+                            console.warn(`Target column "${targetColumnKey}" not found for status "${newStatus}"`);
+                            if (sourceColumnKey && newColumns[sourceColumnKey]) {
+                                newColumns[sourceColumnKey] = {
+                                    ...newColumns[sourceColumnKey],
+                                    items: [...newColumns[sourceColumnKey].items, {...taskToMove, status: taskToMove.status}],
+                                    totalCount: newColumns[sourceColumnKey].totalCount + 1
+                                };
+                            }
+                        }
+                    }
+
+                    return {
+                        ...oldData,
+                        columns: newColumns
+                    };
+                })
+            }
+        },
+        onSuccess: (data) => {
+            queryClient.setQueryData(queryKey, (oldData: FlexibleResponse<TaskDto>) => {
+                if(isKanbanResponse(oldData)) {
+                    return updateKanbanData(oldData, (task: TaskDto) => task.id === data.id ? {...task, ...data} : task);
+                }
+                return oldData;
+            })
+        },
+        onError: () => {
+            queryClient.invalidateQueries({queryKey});
+        }
+    })
+
     const removeTask = useMutation<string, Error, {id: number, userId: number}>(
         {
             mutationFn: async ({id, userId}) => await softDeleteTask(id, userId),
@@ -190,6 +298,22 @@ const TaskBoard: React.FC = () => {
         setTaskFormModalOpen(false);
     }
 
+    const showDeleteModal = (data: TaskDto) => {
+        setDeleteTask(data);
+        setDeleteModalOpen(true);
+    }
+
+    const handleDelete = async () => {
+        if(deleteTask) {
+            await removeTask.mutateAsync({id: deleteTask.id, userId: deleteTask.user_id});
+            closeDeleteModal();
+        }
+    }
+
+    const closeDeleteModal = () => {
+        setDeleteModalOpen(false);
+    }
+
     const handleTaskFormSubmit = async (formData: upsertTaskDto) => {
         if(formData.id > 0) {
             await editTask.mutateAsync({
@@ -205,6 +329,10 @@ const TaskBoard: React.FC = () => {
 
     const handleTabChange = (value: ViewMode) => {
         setViewMode(value);
+    };
+
+    const handleUpdateTaskStatus = async (taskId: number, newStatus: TaskStatus, userId: number) => {
+        await updateTaskStatus.mutateAsync({ taskId, newStatus, userId });
     };
 
     if(isError)
@@ -245,15 +373,26 @@ const TaskBoard: React.FC = () => {
             </Box>
 
             <TaskTabNav tab={viewMode} onChange={handleTabChange} />
-                <Box sx={{ borderBottom: 1, borderColor: "#EAEAEA", mt: 0.5, mb: 3 }} />
+
+            <Box sx={{ borderBottom: 1, borderColor: "#EAEAEA", mt: 0.5, mb: 3 }} />
+
+            <TaskFilters year={year} month={month} sortDir={sortDir} status={status} priority={priority} setYear={setYear} setMonth={setMonth} setSortDir={setSortDir} setStatus={setStatus} setPriority={setPriority} />
+            
+            <Box sx={{padding: 2}}>
                 {
                     viewMode === 'list' &&
-                    <TaskTableList taskList={data as InfiniteScrollResponse<TaskDto>} showViewDetail={showTaskFormModal} />
+                    <TaskTableList taskList={data as InfiniteScrollResponse<TaskDto>} showViewDetail={showTaskFormModal} showDeleteModal={showDeleteModal} />
                 }
                 {
                     viewMode === 'board' &&
-                    <KanbanBoard taskList={data as KanbanResponse<TaskDto>} showViewModal={showTaskFormModal} />
+                    <KanbanBoard taskList={data as KanbanResponse<TaskDto>} showViewModal={showTaskFormModal} showDeleteModal={showDeleteModal} onUpdateTaskStatus={handleUpdateTaskStatus} />
                 }
+            </Box>
+            <TaskDeleteConfirmationModal
+                open={isDeleteModalOpen}
+                onClose={closeDeleteModal}
+                onConfirm={handleDelete}
+            />
             
             <TaskForm 
                 open={isTaskFormModalOpen}

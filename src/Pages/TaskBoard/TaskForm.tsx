@@ -59,8 +59,15 @@ const TaskForm: React.FC<TaskFormProps> = ({open, onClose, onSubmit, defaultValu
         handleChange('notify_at', date);
     }
 
-    const formatDateForInput = (date: Date): string => {
-        return new Date(date).toISOString().substring(0, 10);
+    const formatDateTimeForInput = (date: Date): string => {
+        const pad = (n: number) => n.toString().padStart(2, '0');
+        const year = date.getFullYear();
+        const month = pad(date.getMonth() + 1);
+        const day = pad(date.getDate());
+        const hours = pad(date.getHours());
+        const minutes = pad(date.getMinutes());
+        const seconds = pad(date.getSeconds());
+        return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
     };
 
     const handleSave = () => {
@@ -103,22 +110,22 @@ const TaskForm: React.FC<TaskFormProps> = ({open, onClose, onSubmit, defaultValu
                 <TextField
                     label="Start Date"
                     variant="outlined"
-                    type="date"
-                    value={formatDateForInput(form.start_date)}
+                    type="datetime-local"
+                    value={formatDateTimeForInput(form.start_date)}
                     onChange={(e) => handleStartDateChange(e.target.value)}
                 />
                 <TextField
                     label="Due Date"
                     variant="outlined"
-                    type="date"
-                    value={formatDateForInput(form.due_date)}
+                    type="datetime-local"
+                    value={formatDateTimeForInput(form.due_date)}
                     onChange={(e) => handleDueDateChange(e.target.value)}
                 />
                 <TextField
                     label="Notify At"
                     variant="outlined"
-                    type="date"
-                    value={formatDateForInput(form.notify_at)}
+                    type="datetime-local"
+                    value={formatDateTimeForInput(form.notify_at)}
                     onChange={(e) => handleNotifyDateChange(e.target.value)}
                 />
             </Stack>

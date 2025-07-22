@@ -1,6 +1,7 @@
 import React from 'react';
 import { AppBar, Box, IconButton, Toolbar, Typography, type PaletteMode } from '@mui/material';
 import { Menu as MenuIcon, Add as AddIcon , LightMode as LightModeIcon, DarkMode as DarkModeIcon} from '@mui/icons-material';
+import NotificationMenu from './NotificationMenu';
 
 interface HeaderProps {
     mode: PaletteMode
@@ -25,12 +26,7 @@ const Header: React.FC<HeaderProps> = ({mode, handleToggleTheme, handleToggleDra
                 </Typography>
 
                 <Box>
-                    <IconButton
-                        color='inherit'
-                        onClick={handleToggleDrawer}
-                    >
-                        <AddIcon />
-                    </IconButton>
+                    <NotificationMenu />
                 </Box>
 
                 {
