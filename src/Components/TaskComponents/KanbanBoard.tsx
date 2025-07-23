@@ -21,8 +21,8 @@ import {
     MoreVert
 } from '@mui/icons-material';
 import { styled } from '@mui/material/styles';
-import dayjs from "dayjs";
 import { useState } from "react";
+import { getKanbanPriorityColor, getStatusFromColumnKey, getTaskDateFormat } from "../../Ultils/Helper";
 
 interface KanbanBoardProps {
     taskList: KanbanResponse<TaskDto>
@@ -101,23 +101,6 @@ const ColumnPaper = styled(Paper, {
     border: isDragOver ? `2px dashed ${theme.palette.primary.main}` : '1px solid #EAEAEA',
 }));
 
-const getPriorityColor = (priority: string | null) => {
-    switch (priority) {
-        case 'High': return 'error';
-        case 'Medium': return 'warning';
-        case 'Low': return 'success';
-        default: return 'default';
-    }
-};
-
-const getStatusFromColumnKey = (columnKey: string): TaskStatus => {
-    switch (columnKey) {
-        case 'todo': return 'To Do';
-        case 'in_progress': return 'In Progress';
-        case 'done': return 'Done';
-        default: return columnKey as TaskStatus;
-    }
-};
 
 const TaskCardMenu: React.FC<TaskCareMenuProps> = ({task, showViewModal, showDeleteModal}) => {
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
@@ -172,7 +155,6 @@ const TaskCardMenu: React.FC<TaskCareMenuProps> = ({task, showViewModal, showDel
 const TaskCard: React.FC<TaskCradProps> = ({task, onDragStart, isDragging, showViewModal, showDeleteModal}) => {
 
     const handleDragStart = (e: React.DragEvent) => {
-        // Store both task data and task ID for easier retrieval
         e.dataTransfer.setData('application/json', JSON.stringify(task));
         e.dataTransfer.setData('text/plain', task.id.toString());
         e.dataTransfer.effectAllowed = 'move';
@@ -207,7 +189,7 @@ const TaskCard: React.FC<TaskCradProps> = ({task, onDragStart, isDragging, showV
                 <Box display="flex" justifyContent="space-between" alignItems="center" mb={1}>
                     <Chip
                         label={task.priority || 'none'}
-                        color={getPriorityColor(task.priority)}
+                        color={getKanbanPriorityColor(task.priority)}
                         size="small"
                         variant="outlined"
                     />
@@ -234,7 +216,7 @@ const TaskCard: React.FC<TaskCradProps> = ({task, onDragStart, isDragging, showV
                     <Box display="flex" alignItems="center" gap={0.5}>
                         <CalendarToday sx={{ fontSize: 12, color: 'text.secondary' }} />
                         <Typography variant="caption" color="text.secondary">
-                            {dayjs(task.due_date).format('YYYY-MM-DD')}
+                            {getTaskDateFormat(task.due_date)}
                         </Typography>
                     </Box>
                 </Box>

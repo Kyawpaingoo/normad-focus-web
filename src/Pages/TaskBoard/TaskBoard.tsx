@@ -1,5 +1,5 @@
 import type React from "react";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import TaskTabNav from "../../Components/TaskComponents/TaskTabNav";
 import { useThemeHook } from "../../Context/Theme";
 import { useMutation, useQuery } from "@tanstack/react-query";
@@ -7,14 +7,13 @@ import { type TaskDto, type TaskStatus, type upsertTaskDto} from '../../dtos/tas
 import { createTask, getTaskByView, softDeleteTask, updateTask } from "../../ApiRequestHelpers/taskApiRequest";
 import { queryClient } from "../../Hooks/QueryClient";
 import { type sortDirection, type FlexibleResponse, type ViewMode, type KanbanResponse, } from '../../dtos/responseDtos';
-import { isInfiniteScrollResponse, isKanbanResponse, updateInfiniteScrollData, updateKanbanData } from "../../Ultils/Helper";
+import { getColumnKeyFromStatus, isInfiniteScrollResponse, isKanbanResponse, updateInfiniteScrollData, updateKanbanData } from "../../Ultils/Helper";
 import { type InfiniteScrollResponse } from "../../dtos/responseDtos";
 import { Alert, Box, Button, Typography } from "@mui/material";
 import TaskTableList from "../../Components/TaskComponents/TaskTableList";
 import KanbanBoard from "../../Components/TaskComponents/KanbanBoard";
 import TaskForm from "./TaskForm";
 import TaskDeleteConfirmationModal from "../../Components/TaskComponents/TaskDeleteConfirmationModal";
-import MonthYearSelector from "../../Components/TaskComponents/MonthYearSelector";
 import TaskFilters from "../../Components/TaskComponents/TaskFilters";
 
 const TaskBoard: React.FC = () => {
@@ -32,15 +31,8 @@ const TaskBoard: React.FC = () => {
     const [isTaskFormModalOpen, setTaskFormModalOpen] = useState<boolean>(false);
     const [isDeleteModalOpen, setDeleteModalOpen] = useState<boolean>(false);
     const [deleteTask, setDeleteTask] = useState<TaskDto | null>(null);
-
-    const getColumnKeyFromStatus = (status: TaskStatus): string => {
-    switch (status) {
-        case 'To Do': return 'todo';
-        case 'In Progress': return 'in_progress';
-        case 'Done': return 'done';
-        default: return status.toLowerCase().replace(' ', '_');
-    }
-};
+    const [isLoadingMore, setIsLoadingMore] = useState<boolean>(false);
+    const [allTasks, setAllTasks] = useState<TaskDto[]>([]);
 
     const queryKey = ['tasks', viewMode, cursor, limit, year, month, sortDir, searchQuery, status, priority] as const;
 
@@ -275,6 +267,52 @@ const TaskBoard: React.FC = () => {
         queryFn: async () => await getTaskByView(viewMode,cursor, limit, auth?.id, year, month, sortDir, searchQuery, status, priority)
     });
 
+    const loadMoreTasks = useCallback(async () => {
+        if (isLoadingMore || !data || !isInfiniteScrollResponse(data) || !data.hasNextPage) {
+            return;
+        }
+
+        setIsLoadingMore(true);
+        
+        try {
+            const newData = await getTaskByView(
+                viewMode,
+                data.nextCursor,
+                limit,
+                auth?.id,
+                year,
+                month,
+                sortDir,
+                searchQuery,
+                status,
+                priority
+            );
+
+            if (isInfiniteScrollResponse(newData)) {
+                // Update the query cache with merged data
+                queryClient.setQueryData(queryKey, (oldData: FlexibleResponse<TaskDto>) => {
+                    if (isInfiniteScrollResponse(oldData)) {
+                        return {
+                            ...oldData,
+                            results: [...oldData.results, ...newData.results],
+                            next_cursor: newData.nextCursor,
+                            has_more: newData.hasNextPage
+                        } as InfiniteScrollResponse<TaskDto>;
+                    }
+                    return oldData;
+                });
+
+                // Update local state
+                setAllTasks(prev => [...prev, ...newData.results]);
+                setCursor(newData.nextCursor || '');
+            }
+        } catch (error) {
+            console.error('Error loading more tasks:', error);
+        } finally {
+            setIsLoadingMore(false);
+        }
+    }, [data, isLoadingMore, viewMode, limit, auth?.id, year, month, sortDir, searchQuery, status, priority, queryKey]);
+
     const showTaskFormModal = (data: TaskDto  | null) => {
         if(data) {
             setTaskForm({
@@ -295,7 +333,9 @@ const TaskBoard: React.FC = () => {
     }
 
     const closeTaskFormModal = () => {
+        setTaskForm(null);
         setTaskFormModalOpen(false);
+        
     }
 
     const showDeleteModal = (data: TaskDto) => {
@@ -324,6 +364,7 @@ const TaskBoard: React.FC = () => {
             const taskForm = {...formData, userId: auth?.id}
             await addTask.mutateAsync(taskForm as upsertTaskDto);
         }
+        setTaskForm(null);
         closeTaskFormModal();
     }
 
@@ -372,7 +413,7 @@ const TaskBoard: React.FC = () => {
                 </Box>
             </Box>
 
-            <TaskTabNav tab={viewMode} onChange={handleTabChange} />
+            <TaskTabNav activeTab={viewMode} onTabChange={handleTabChange} />
 
             <Box sx={{ borderBottom: 1, borderColor: "#EAEAEA", mt: 0.5, mb: 3 }} />
 
@@ -381,7 +422,7 @@ const TaskBoard: React.FC = () => {
             <Box sx={{padding: 2}}>
                 {
                     viewMode === 'list' &&
-                    <TaskTableList taskList={data as InfiniteScrollResponse<TaskDto>} showViewDetail={showTaskFormModal} showDeleteModal={showDeleteModal} />
+                    <TaskTableList taskList={data as InfiniteScrollResponse<TaskDto>} showViewDetail={showTaskFormModal} showDeleteModal={showDeleteModal} isLoadingMore={isLoadingMore} onLoadMore={loadMoreTasks} />
                 }
                 {
                     viewMode === 'board' &&

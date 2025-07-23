@@ -19,7 +19,7 @@ import { FilterList, ExpandMore, ExpandLess, Clear } from "@mui/icons-material";
 import { styled } from '@mui/material/styles';
 import type { sortDirection } from "../../dtos/responseDtos";
 import { pageSizeOptions, categoryOptions, typeOptions } from '../../Ultils/expenseData';
-import { monthOptions } from '../../Ultils/monthData';
+import { MONTH_OPTIONS } from '../../Ultils/monthData';
 
 interface ExpenseFiltersProps {
     filters: {
@@ -142,7 +142,7 @@ const ExpenseFilters: React.FC<ExpenseFiltersProps> = ({filters, handlers, setSh
                                 label="Month"
                                 onChange={(e) => handlers.handleMonthChange(e.target.value as number)}
                             >
-                                {monthOptions.map(monthOption => (
+                                {MONTH_OPTIONS.map(monthOption => (
                                     <MenuItem key={monthOption.value} value={monthOption.value}>
                                         {monthOption.label}
                                     </MenuItem>

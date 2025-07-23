@@ -4,7 +4,7 @@ export type upsertTaskDto = {
     title: string | null,
     description: string | null,
     status: TaskStatus,
-    priority: PriorityStatus,
+    priority: TaskPriority,
     start_date: Date | null,
     due_date: Date | null,
     notify_at: Date | null
@@ -19,11 +19,11 @@ export type TaskDto = {
     notify_at: Date | null;
     description: string | null;
     status: TaskStatus;
-    priority: PriorityStatus;
+    priority: TaskPriority;
     start_date: Date | null;
     due_date: Date | null;
 }
 
 export type TaskStatus = 'To Do' | 'In Progress' | 'Done';
 
-export type PriorityStatus = 'High' | 'Medium' | 'Low';
+export type TaskPriority = 'High' | 'Medium' | 'Low';

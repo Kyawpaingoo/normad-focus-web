@@ -8,7 +8,7 @@ import AppDrawer from "../Components/AppDrawer";
 
 
 const MainLayout: React.FC = () => {
-    const {mode, toggleTheme} = useThemeHook();
+    const {auth, mode, toggleTheme} = useThemeHook();
     const [drawerOpen, setDrawerOpen] = useState<boolean>(false);
 
     const handleDrawerToggle = () => {
@@ -18,7 +18,7 @@ const MainLayout: React.FC = () => {
     
     return (
         <Box>
-            <Header mode={mode} handleToggleTheme={toggleTheme} handleToggleDrawer={handleDrawerToggle} />
+            <Header userId={auth?.id} mode={mode} handleToggleTheme={toggleTheme} handleToggleDrawer={handleDrawerToggle} />
             <AppDrawer open={drawerOpen} onClose={handleDrawerToggle} />
             <Container maxWidth='xl' sx={{mt:2}}>
                 <Outlet />

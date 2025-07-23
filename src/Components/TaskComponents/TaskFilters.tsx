@@ -46,8 +46,7 @@ const TaskFilters: React.FC<TaskFiltersProps> = ({year, month, sortDir, status, 
 
     return(
         <Box display={'flex'} gap={2} flexWrap={'wrap'}>
-            
-                <MonthYearSelector year={year} month={month} setYear={setYear} setMonth={setMonth} />
+            <MonthYearSelector year={year} month={month} onYearChange={setYear} onMonthChange={setMonth} />
             
             
             <FormControl size="small" sx={{ minWidth: 160 }}>

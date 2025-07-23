@@ -2,6 +2,7 @@ import { Stack, TextField, Button, MenuItem } from "@mui/material"
 import SidebarModal from "../../Components/SidebarModal"
 import React, { useState, useEffect } from "react";
 import type { upsertTaskDto } from "../../dtos/taskDto";
+import { formatDateTimeForInput } from "../../Ultils/Helper";
 
 interface TaskFormProps {
     open: boolean,
@@ -11,16 +12,16 @@ interface TaskFormProps {
 }
 
 const defaultTask: upsertTaskDto = {
-        id: 0,
-        userId: 0,
-        title: '',
-        description: '',
-        status: 'To Do',
-        priority: 'Low',
-        start_date: new Date(),
-        due_date: new Date(),
-        notify_at: new Date(),
-    };
+    id: 0,
+    userId: 0,
+    title: '',
+    description: '',
+    status: 'To Do',
+    priority: 'Low',
+    start_date: new Date(),
+    due_date: new Date(),
+    notify_at: new Date(),
+};
 
 const TaskForm: React.FC<TaskFormProps> = ({open, onClose, onSubmit, defaultValue}) => {
 
@@ -58,17 +59,6 @@ const TaskForm: React.FC<TaskFormProps> = ({open, onClose, onSubmit, defaultValu
         const date = new Date(dateString);
         handleChange('notify_at', date);
     }
-
-    const formatDateTimeForInput = (date: Date): string => {
-        const pad = (n: number) => n.toString().padStart(2, '0');
-        const year = date.getFullYear();
-        const month = pad(date.getMonth() + 1);
-        const day = pad(date.getDate());
-        const hours = pad(date.getHours());
-        const minutes = pad(date.getMinutes());
-        const seconds = pad(date.getSeconds());
-        return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
-    };
 
     const handleSave = () => {
         onSubmit(form);
@@ -111,21 +101,21 @@ const TaskForm: React.FC<TaskFormProps> = ({open, onClose, onSubmit, defaultValu
                     label="Start Date"
                     variant="outlined"
                     type="datetime-local"
-                    value={formatDateTimeForInput(form.start_date)}
+                    value={formatDateTimeForInput(form.start_date ?? new Date())}
                     onChange={(e) => handleStartDateChange(e.target.value)}
                 />
                 <TextField
                     label="Due Date"
                     variant="outlined"
                     type="datetime-local"
-                    value={formatDateTimeForInput(form.due_date)}
-                    onChange={(e) => handleDueDateChange(e.target.value)}
+                    value={formatDateTimeForInput(form.due_date ?? new Date())}
+                    onChange={(e) => handleDueDateChange(e.target.value ?? new Date())}
                 />
                 <TextField
                     label="Notify At"
                     variant="outlined"
                     type="datetime-local"
-                    value={formatDateTimeForInput(form.notify_at)}
+                    value={formatDateTimeForInput(form.notify_at ?? new Date())}
                     onChange={(e) => handleNotifyDateChange(e.target.value)}
                 />
             </Stack>

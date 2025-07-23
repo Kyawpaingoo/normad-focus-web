@@ -1,40 +1,49 @@
-import { Tab, Tabs } from "@mui/material";
-import { TabNavList } from "../../Ultils/taskData";
-import type React from "react";
-import type { ViewMode } from "../../dtos/responseDtos";
+import React, { useCallback } from 'react';
+import { Tab, Tabs } from '@mui/material';
+import type { ViewMode } from '../../dtos/responseDtos';
+import { TAB_NAV_LIST } from '../../Ultils/taskData';
+
 interface TaskTabNavProps {
-    tab: ViewMode,
-    onChange: (value: ViewMode) => void;
+    activeTab: ViewMode;
+    onTabChange: (value: ViewMode) => void;
 }
 
-const TaskTabNav: React.FC<TaskTabNavProps> = ({tab, onChange})=> {
-    
-    
+const TaskTabNav: React.FC<TaskTabNavProps> = ({ activeTab, onTabChange }) => {
+    const handleTabChange = useCallback((_: React.SyntheticEvent, newValue: ViewMode) => {
+        onTabChange(newValue);
+    }, [onTabChange]);
+
     return (
-        <Tabs value={tab}
-            onChange={(_, newValue) => onChange(newValue)}
+        <Tabs
+            value={activeTab}
+            onChange={handleTabChange}
             sx={{
                 minHeight: 40,
-                "& .MuiTabs-indicator": { background: "#222", height: 2, borderRadius: 1 },
+                '& .MuiTabs-indicator': { 
+                background: '#222', 
+                height: 2, 
+                borderRadius: 1 
+                },
             }}
+            aria-label="Task view tabs"
         >
-            {TabNavList.map((t) => (
+            {TAB_NAV_LIST.map((tab) => (
                 <Tab
-                    key={t.value}
-                    label={t.label}
-                    value={t.value}
-                    sx={{
-                        minHeight: 40,
-                        fontWeight: t.value === "board" ? 600 : 500,
-                        color: "#222",
-                        textTransform: "none",
-                        opacity: t.value === "board" ? 1 : 0.7,
-                        mr: 2,
-                    }}
+                key={tab.value}
+                label={tab.label}
+                value={tab.value}
+                sx={{
+                    minHeight: 40,
+                    fontWeight: tab.value === activeTab ? 600 : 500,
+                    color: '#222',
+                    textTransform: 'none',
+                    opacity: tab.value === activeTab ? 1 : 0.7,
+                    mr: 2,
+                }}
                 />
             ))}
         </Tabs>
-    )
-}
+    );
+};
 
 export default TaskTabNav;
