@@ -61,7 +61,7 @@ const ExpenseDashboard : React.FC = () => {
             await editExpense.mutateAsync({data: formData, id: formData.id, userId: formData.userId});
         }
         else {
-            const expenseForm = {...formData, userId: 8};
+            const expenseForm = {...formData, userId: auth?.id};
             await addExpense.mutateAsync(expenseForm as upsertExpenseRequestDto);
         }
         closeExpenseFormModal();

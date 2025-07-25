@@ -1,13 +1,15 @@
 import React from 'react';
 import { AppBar, Box, IconButton, Toolbar, Typography, type PaletteMode } from '@mui/material';
-import { Menu as MenuIcon, Add as AddIcon , LightMode as LightModeIcon, DarkMode as DarkModeIcon} from '@mui/icons-material';
+import { Menu as MenuIcon, LightMode as LightModeIcon, DarkMode as DarkModeIcon} from '@mui/icons-material';
+import NotificationMenu from './NotificationMenu';
 
 interface HeaderProps {
+    userId: number,
     mode: PaletteMode
     handleToggleTheme: ()=> void;
     handleToggleDrawer: () => void;
 }
-const Header: React.FC<HeaderProps> = ({mode, handleToggleTheme, handleToggleDrawer}) => {
+const Header: React.FC<HeaderProps> = ({userId, mode, handleToggleTheme, handleToggleDrawer}) => {
     
     return (
         <AppBar position='static'>
@@ -25,12 +27,7 @@ const Header: React.FC<HeaderProps> = ({mode, handleToggleTheme, handleToggleDra
                 </Typography>
 
                 <Box>
-                    <IconButton
-                        color='inherit'
-                        onClick={handleToggleDrawer}
-                    >
-                        <AddIcon />
-                    </IconButton>
+                    <NotificationMenu userId={userId} />
                 </Box>
 
                 {

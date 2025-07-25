@@ -6,6 +6,7 @@ import Login from "./Pages/login";
 import Register from "./Pages/register";
 import Home from "./Pages/Home";
 import ExpenseDashboard from "./Pages/Expense/Expense";
+import TaskBoard from "./Pages/TaskBoard/TaskBoard";
 
 const router = createBrowserRouter([
     {
@@ -21,7 +22,11 @@ const router = createBrowserRouter([
                     {
                         path: '/expense',
                         element: <ExpenseDashboard />
-                    }
+                    },
+                    {
+                        path: '/task',
+                        element: <TaskBoard />
+                    },
                 ]
             }
         ]

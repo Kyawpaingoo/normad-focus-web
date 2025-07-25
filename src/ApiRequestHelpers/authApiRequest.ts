@@ -42,7 +42,6 @@ export const verfiyUser = async(): Promise<User | null> => {
         withCredentials: true,
         validateStatus: (status) => status === 200 || status === 403
     });
-    console.log(response);
     if(response.status == 200) return response.data.data;
     if (response.status === 403) {
             return null; 
