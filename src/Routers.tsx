@@ -7,6 +7,7 @@ import Register from "./Pages/register";
 import Home from "./Pages/Home";
 import ExpenseDashboard from "./Pages/Expense/Expense";
 import TaskBoard from "./Pages/TaskBoard/TaskBoard";
+import MeetingSchedule from "./Pages/MeetingSchedule/MeetingSchedule";
 
 const router = createBrowserRouter([
     {
@@ -26,6 +27,10 @@ const router = createBrowserRouter([
                     {
                         path: '/task',
                         element: <TaskBoard />
+                    },
+                    {
+                        path: '/meeting',
+                        element: <MeetingSchedule />
                     },
                 ]
             }

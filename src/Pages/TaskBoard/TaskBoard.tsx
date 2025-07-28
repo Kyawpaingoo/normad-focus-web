@@ -258,6 +258,12 @@ const TaskBoard: React.FC = () => {
                         }
                     })
                 }
+            },
+            onSuccess: () => {
+                queryClient.invalidateQueries({queryKey});
+            },
+            onError: () => {
+                queryClient.invalidateQueries({queryKey});
             }
         }
     )
