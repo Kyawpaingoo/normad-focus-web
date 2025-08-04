@@ -230,14 +230,14 @@ const MeetingSchedule: React.FC = () => {
                     </Table>
                 </TableContainer>
                 <Box display='flex' justifyContent={'center'} sx={{mt: 2}}>
-                            <Pagination 
-                                count={data?.totalPage}
-                                page={page}
-                                onChange={(e, value) => setPage(value)}
-                                shape="rounded"
-                                showFirstButton
-                                showLastButton
-                            />
+                    <Pagination 
+                        count={data?.totalPage}
+                        page={page}
+                        onChange={(e, value) => setPage(value)}
+                        shape="rounded"
+                        showFirstButton
+                        showLastButton
+                    />
                 </Box>
             </Paper>
 

@@ -78,6 +78,24 @@ const AppDrawer: React.FC<AppDrawerProps> = ({open, onClose})=> {
                             </ListItemIcon>
                         </ListItemButton>
                     </ListItem>
+                     <ListItem>
+                        <ListItemButton
+                            onClick={()=>navigate('/meeting')}
+                        >
+                            <ListItemIcon>
+                                <ListItemText>Meeting Schedule</ListItemText>
+                            </ListItemIcon>
+                        </ListItemButton>
+                    </ListItem>
+                     <ListItem>
+                        <ListItemButton
+                            onClick={()=>navigate('/country-log')}
+                        >
+                            <ListItemIcon>
+                                <ListItemText>Country Log</ListItemText>
+                            </ListItemIcon>
+                        </ListItemButton>
+                    </ListItem>
                 </List>
         </Drawer>
     )

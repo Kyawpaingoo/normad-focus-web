@@ -1,13 +1,13 @@
-import { createBrowserRouter } from "react-router-dom";
+import { createBrowserRouter, Navigate } from "react-router-dom";
 import ProtectedRoute from "./Layout/ProtectedRout";
 import MainLayout from "./Layout/MainLayout";
 import AuthLayout from "./Layout/AuthLayout";
 import Login from "./Pages/login";
 import Register from "./Pages/register";
-import Home from "./Pages/Home";
 import ExpenseDashboard from "./Pages/Expense/Expense";
 import TaskBoard from "./Pages/TaskBoard/TaskBoard";
 import MeetingSchedule from "./Pages/MeetingSchedule/MeetingSchedule";
+import CountryLog from "./Pages/CountryLog/CountryLog";
 
 const router = createBrowserRouter([
     {
@@ -18,7 +18,7 @@ const router = createBrowserRouter([
                 children: [
                     {
                         path: '/',
-                        element: <Home />
+                        element: <Navigate to="/task" replace />
                     },
                     {
                         path: '/expense',
@@ -31,6 +31,10 @@ const router = createBrowserRouter([
                     {
                         path: '/meeting',
                         element: <MeetingSchedule />
+                    },
+                    {
+                        path: '/country-log',
+                        element: <CountryLog />
                     },
                 ]
             }

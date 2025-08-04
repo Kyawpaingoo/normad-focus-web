@@ -128,12 +128,18 @@ export function getTaskDateFormat (date: Date | null): string {
 }
 
 export function formatDateTimeForInput (date: Date): string {
+    const parsedDate = new Date(date);
     const pad = (n: number) => n.toString().padStart(2, '0');
-    const year = date.getFullYear();
-    const month = pad(date.getMonth() + 1);
-    const day = pad(date.getDate());
-    const hours = pad(date.getHours());
-    const minutes = pad(date.getMinutes());
-    const seconds = pad(date.getSeconds());
+
+    const year = parsedDate.getFullYear();
+    const month = pad(parsedDate.getMonth() + 1);
+    const day = pad(parsedDate.getDate());
+    const hours = pad(parsedDate.getHours());
+    const minutes = pad(parsedDate.getMinutes());
+    const seconds = pad(parsedDate.getSeconds());
     return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
+};
+
+export function formatDateForInput (date: Date): string {
+    return new Date(date).toISOString().substring(0, 10);
 };
