@@ -143,3 +143,12 @@ export function formatDateTimeForInput (date: Date): string {
 export function formatDateForInput (date: Date): string {
     return new Date(date).toISOString().substring(0, 10);
 };
+
+export function toBase64(file: File): Promise<string> {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = () => resolve(reader.result as string);
+        reader.onerror = (error) => reject(error);
+    });
+}
