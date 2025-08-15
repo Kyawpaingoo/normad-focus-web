@@ -1,8 +1,12 @@
 import { Stack, TextField, Button, MenuItem } from "@mui/material"
 import SidebarModal from "../../Components/SidebarModal"
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import type { upsertTaskDto } from "../../dtos/taskDto";
-import { formatDateTimeForInput } from "../../Ultils/Helper";
+import { formatDateTimeForInput, toBase64 } from "../../Ultils/Helper";
+import ReactQuill from 'react-quill';
+import 'react-quill/dist/quill.snow.css';
+import imageCompression from 'browser-image-compression'
+import { imageUpload } from "../../ApiRequestHelpers/imageUploadApiRequest";
 
 interface TaskFormProps {
     open: boolean,
@@ -26,8 +30,10 @@ const defaultTask: upsertTaskDto = {
 const TaskForm: React.FC<TaskFormProps> = ({open, onClose, onSubmit, defaultValue}) => {
 
     const [form, setForm] = useState<upsertTaskDto>(defaultTask);
+    const [quillContent, setQuillContent] = useState('');
+    const quillRef = useRef<ReactQuill>(null);
 
-    useEffect(()=> {
+    useEffect(() => {
         setForm({
             id: defaultValue?.id || 0,
             userId: defaultValue?.userId || 0,
@@ -38,8 +44,39 @@ const TaskForm: React.FC<TaskFormProps> = ({open, onClose, onSubmit, defaultValu
             start_date: defaultValue?.start_date ? new Date(defaultValue.start_date) : new Date(),
             due_date: defaultValue?.due_date ? new Date(defaultValue.due_date) : new Date(),
             notify_at: defaultValue?.notify_at ? new Date(defaultValue.notify_at) : new Date(),
-        })
-    },[defaultValue]);
+        });
+
+         if (defaultValue?.description) {
+            try {
+                const parsed = JSON.parse(defaultValue.description);
+                // If parsed is a valid Delta object, set it directly to quillContent
+                if (parsed && parsed.ops) {
+                    setQuillContent(''); // Clear first, then set in next effect
+                    setTimeout(() => {
+                        if (quillRef.current) {
+                            quillRef.current.getEditor().setContents(parsed);
+                        }
+                    }, 0);
+                } 
+                // If parsed is a string inside JSON (double-stringified HTML)
+                else if (typeof parsed === 'string') {
+                    setQuillContent(parsed);
+                } 
+                else {
+                    setQuillContent(defaultValue.description);
+                }
+            } catch {
+                // Not valid JSON → assume HTML or plain text
+                setQuillContent(defaultValue.description);
+            }
+        } else {
+            setQuillContent('');
+        }
+        
+    }, [defaultValue]);
+    const handleQuillChange = (content: string) => {
+        setQuillContent(content);
+    }
 
     const handleChange = (field: keyof upsertTaskDto, value: string | number | Date) => {
         setForm(prev => ({ ...prev, [field]: value }));
@@ -60,8 +97,64 @@ const TaskForm: React.FC<TaskFormProps> = ({open, onClose, onSubmit, defaultValu
         handleChange('notify_at', date);
     }
 
+    const handleImageUpload = useCallback(async () => {
+        
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = 'image/*';
+        input.click();
+
+        input.onchange = async () => {
+            if(input !== null && input.files !== null) {
+                const file = input.files[0];
+
+                const compressedFile = await imageCompression(file, {
+                    maxSizeMB: 0.3,
+                    maxWidthOrHeight: 1024,
+                    useWebWorker: true,
+                });
+                
+                const base64String = await toBase64(compressedFile);
+                const url = await imageUpload(base64String);
+                
+                const quill = quillRef.current;
+                if (quill) {
+                    const range = quill.getEditorSelection();
+                    if(range)
+                    {
+                        quill.getEditor().insertEmbed(range.index, "image", url);
+                    }
+                }
+            }
+        }; 
+    }, []);
+
+    const modules = useMemo(() => ({
+        toolbar: {
+            container: [
+                [{ header: [1, 2, false] }],
+                ["bold", "italic", "underline", "strike"],
+                [{ list: "ordered" }, { list: "bullet" }],
+                ["link", "image"],
+                ["clean"],
+            ],
+            handlers: {
+                image: handleImageUpload,
+            },
+        },
+    }), [handleImageUpload]);
+
     const handleSave = () => {
-        onSubmit(form);
+        const quill = quillRef.current;
+        if (quill) {
+            const delta = quill.getEditor().getContents();
+            const jsonString = JSON.stringify(delta);
+            setForm((prev) => ({ ...prev, description: jsonString }));
+
+            onSubmit({ ...form, description: jsonString });
+        } else {
+            onSubmit(form);
+        }
         onClose();
     };
 
@@ -78,11 +171,14 @@ const TaskForm: React.FC<TaskFormProps> = ({open, onClose, onSubmit, defaultValu
                     value={form.title}
                     onChange={(e) => handleChange('title', e.target.value)}
                 />
-                <TextField
-                    label="Description"
-                    variant="outlined"
-                    value={form.description}
-                    onChange={(e) => handleChange('description', e.target.value)}
+                <ReactQuill
+                    key={defaultValue?.id || 'new-task'}
+                    value={quillContent}
+                    ref={quillRef}
+                    onChange={handleQuillChange}
+                    modules={modules}
+                    theme="snow"
+                    style={{ height: "200px", marginBottom: "80px" }}
                 />
 
                 <TextField id="task-status-select" select label="Select Status" value={form.status} onChange={(e)=> handleChange('status', e.target.value)}>

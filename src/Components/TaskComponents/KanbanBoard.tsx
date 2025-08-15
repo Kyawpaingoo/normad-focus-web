@@ -195,23 +195,6 @@ const TaskCard: React.FC<TaskCradProps> = ({task, onDragStart, isDragging, showV
                     />
                 </Box>
                     
-                {task.description && (
-                    <Typography 
-                        variant="body2" 
-                        color="text.secondary" 
-                        sx={{ 
-                        mb: 2, 
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                        display: '-webkit-box',
-                        WebkitLineClamp: 2,
-                        WebkitBoxOrient: 'vertical',
-                        }}
-                    >
-                        {task.description}
-                    </Typography>
-                )}
-                    
                 <Box display="flex" alignItems="center" justifyContent="space-between">
                     <Box display="flex" alignItems="center" gap={0.5}>
                         <CalendarToday sx={{ fontSize: 12, color: 'text.secondary' }} />
