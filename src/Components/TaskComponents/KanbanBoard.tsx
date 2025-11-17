@@ -1,28 +1,14 @@
 import type React from "react";
 import type { KanbanResponse } from "../../dtos/responseDtos";
 import type { TaskDto, TaskStatus } from "../../dtos/taskDto";
-import {
-    Box,
-    Card,
-    CardContent,
-    Typography,
-    Chip,
-    IconButton,
-    Paper,
-    Tooltip,
-    Badge,
-    Menu,
-    MenuItem
-} from '@mui/material';
-import {
-    Add,
-    CalendarToday,
-    DragIndicator,
-    MoreVert
-} from '@mui/icons-material';
-import { styled } from '@mui/material/styles';
 import { useState } from "react";
-import { getKanbanPriorityColor, getStatusFromColumnKey, getTaskDateFormat } from "../../Ultils/Helper";
+import { getKanbanPriorityColor as _getKanbanPriorityColor, getStatusFromColumnKey, getTaskDateFormat } from "../../Ultils/Helper";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Plus, Calendar, GripVertical, MoreVertical } from "lucide-react";
 
 interface KanbanBoardProps {
     taskList: KanbanResponse<TaskDto>
@@ -60,95 +46,31 @@ interface KanbanColumnProps {
     onAddTask: (status: TaskStatus) => void;
 }
 
-interface TaskCardStyledProps {
-    isDragging?: boolean;
-}
-
-interface ColumnPaperProps {
-    isDragOver?: boolean;
-}
-
-const DragIndicatorStyled = styled(DragIndicator)(({ theme }) => ({
-    opacity: 0.3,
-    cursor: 'grab',
-    '&:hover': {
-        opacity: 0.7,
-    },
-}));
-
-const TaskCardStyled = styled(Card, {
-  shouldForwardProp: (prop) => prop !== 'isDragging',
-})<TaskCardStyledProps>(({ theme, isDragging }) => ({
-    cursor: isDragging ? 'move' : 'pointer',
-    margin: theme.spacing(1, 0),
-    transition: 'all 0.2s ease',
-    opacity: isDragging ? 0.8 : 1,
-    transform: isDragging ? 'rotate(5deg)' : 'none',
-    '&:hover': {
-        boxShadow: theme.shadows[4],
-        transform: 'translateY(-2px)',
-    },
-}));
-
-const ColumnPaper = styled(Paper, {
-  shouldForwardProp: (prop) => prop !== 'isDragOver',
-})<ColumnPaperProps>(({ theme, isDragOver }) => ({
-    padding: theme.spacing(2),
-    minHeight: '500px',
-    width: '320px',
-    backgroundColor: isDragOver ? theme.palette.action.hover : theme.palette.background.default,
-    transition: 'background-color 0.2s ease',
-    border: isDragOver ? `2px dashed ${theme.palette.primary.main}` : '1px solid #EAEAEA',
-}));
 
 
 const TaskCardMenu: React.FC<TaskCareMenuProps> = ({task, showViewModal, showDeleteModal}) => {
-    const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-    const open = Boolean(anchorEl);
-    const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+    const handleEditMenu = (event: React.MouseEvent) => {
         event.stopPropagation();
-        setAnchorEl(event.currentTarget);
+        showViewModal(task);
     }
 
-    const handleClose = (event?: React.MouseEvent) => {
-        if (event) event?.stopPropagation();
-        setAnchorEl(null);
-    }
-
-    const handleEditMenu = (event: React.MouseEvent, taskData: TaskDto | null) => {
+    const handleDeleteMenu = (event: React.MouseEvent) => {
         event.stopPropagation();
-        showViewModal(taskData);
-        handleClose();
-    }
-
-    const handleDeleteMenu = (event: React.MouseEvent, taskData: TaskDto) => {
-        event.stopPropagation();
-        showDeleteModal(taskData);
-        handleClose();
+        showDeleteModal(task);
     }
 
     return (
-        <>
-            <IconButton id="task-card-menu-button" size="small" sx={{ padding: 0.5 }} aria-controls={open ? 'basic-menu' : undefined}
-                aria-haspopup="true"
-                aria-expanded={open ? 'true' : undefined} onClick={handleClick}>
-                <MoreVert />
-            </IconButton>
-            <Menu
-                id="task-card-menu"
-                anchorEl={anchorEl}
-                open={open}
-                onClose={handleClose}
-                 slotProps={{
-                    list: {
-                        'aria-labelledby': 'task-card-menu-button',
-                    },
-                }}
-            >
-                <MenuItem onClick={(e) => handleEditMenu(e, task)}>Edit</MenuItem>
-                <MenuItem onClick={(e) => handleDeleteMenu(e, task)}>Delete</MenuItem>
-            </Menu>
-        </>
+        <DropdownMenu>
+            <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
+                    <MoreVertical className="h-4 w-4" />
+                </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={handleEditMenu}>Edit</DropdownMenuItem>
+                <DropdownMenuItem onClick={handleDeleteMenu}>Delete</DropdownMenuItem>
+            </DropdownMenuContent>
+        </DropdownMenu>
     )
 }
 
@@ -170,79 +92,94 @@ const TaskCard: React.FC<TaskCradProps> = ({task, onDragStart, isDragging, showV
         showViewModal(task);
     }
     return(
-        <TaskCardStyled
+        <Card
             draggable
             onDragStart={handleDragStart}
-            isDragging={isDragging}
-            elevation={isDragging ? 6 : 2}
             onClick={handleClick}
+            className={`my-2 transition-all duration-200 ${
+                isDragging
+                    ? 'cursor-move opacity-80 rotate-[5deg] shadow-lg'
+                    : 'cursor-pointer hover:shadow-md hover:-translate-y-0.5'
+            }`}
         >
-            <CardContent sx={{ padding: 2, '&:last-child': { paddingBottom: 2 } }}>
-                <Box display="flex" alignItems="flex-start" justifyContent="space-between" mb={1}>
-                    <DragIndicatorStyled fontSize="small" />
-                    <Typography variant="subtitle2" fontWeight="medium" sx={{ flex: 1, mx: 1 }}>
+            <CardContent className="p-4">
+                <div className="flex items-start justify-between mb-2">
+                    <GripVertical className="h-4 w-4 opacity-30 hover:opacity-70 cursor-grab" />
+                    <p className="text-sm font-medium flex-1 mx-2">
                         {task.title || 'Untitled Task'}
-                    </Typography>
+                    </p>
                     <TaskCardMenu task={task} showViewModal={showViewModal} showDeleteModal={showDeleteModal} />
-                </Box>
-                    
-                <Box display="flex" justifyContent="space-between" alignItems="center" mb={1}>
-                    <Chip
-                        label={task.priority || 'none'}
-                        color={getKanbanPriorityColor(task.priority)}
-                        size="small"
-                        variant="outlined"
-                    />
-                </Box>
-                    
-                <Box display="flex" alignItems="center" justifyContent="space-between">
-                    <Box display="flex" alignItems="center" gap={0.5}>
-                        <CalendarToday sx={{ fontSize: 12, color: 'text.secondary' }} />
-                        <Typography variant="caption" color="text.secondary">
+                </div>
+
+                <div className="flex justify-between items-center mb-2">
+                    <Badge
+                        variant="outline"
+                        className={`${
+                            task.priority === 'High' ? 'border-red-500 text-red-500' :
+                            task.priority === 'Medium' ? 'border-yellow-500 text-yellow-500' :
+                            'border-gray-500 text-gray-500'
+                        }`}
+                    >
+                        {task.priority || 'none'}
+                    </Badge>
+                </div>
+
+                <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-1">
+                        <Calendar className="h-3 w-3 text-muted-foreground" />
+                        <span className="text-xs text-muted-foreground">
                             {getTaskDateFormat(task.due_date)}
-                        </Typography>
-                    </Box>
-                </Box>
+                        </span>
+                    </div>
+                </div>
             </CardContent>
-        </TaskCardStyled>
+        </Card>
     )
 }
 
 const KanbanColumn: React.FC<KanbanColumnProps> =({title, tasks, totalCount, onDrop, onDragOver, onDragStart, status, draggedTask, isDragOver, showViewModal, showDeleteModal, onAddTask}) => {
     return (
-        <ColumnPaper
-            elevation={1}
-            isDragOver={isDragOver}
+        <div
+            className={`p-4 min-h-[500px] w-80 transition-all duration-200 rounded-lg ${
+                isDragOver
+                    ? 'bg-accent border-2 border-dashed border-primary'
+                    : 'bg-background border border-[#EAEAEA]'
+            }`}
             onDrop={(e) => onDrop(e, status)}
             onDragOver={onDragOver}
         >
-            <Box display="flex" alignItems="center" justifyContent="space-between" mb={2}>
-                <Box display="flex" alignItems="center" gap={1}>
-                    <Typography variant="h6" fontWeight="bold" sx={{paddingRight:2}}>
+            <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2">
+                    <h3 className="text-lg font-bold pr-2">
                         {title}
-                    </Typography>
-                    <Badge badgeContent={totalCount} color="primary" />
-                </Box>
-                <Tooltip title="Add new task">
-                    <IconButton size="small" color="primary" onClick={() => onAddTask(status)}>
-                        <Add />
-                    </IconButton>
-                </Tooltip>
-            </Box>
-      
-            <Box>
+                    </h3>
+                    <Badge variant="default">{totalCount}</Badge>
+                </div>
+                <TooltipProvider>
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <Button variant="ghost" size="sm" onClick={() => onAddTask(status)}>
+                                <Plus className="h-4 w-4" />
+                            </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>Add new task</TooltipContent>
+                    </Tooltip>
+                </TooltipProvider>
+            </div>
+
+            <div>
                 {tasks.map((task) => (
-                <TaskCard
-                    key={task.id}
-                    task={task}
-                    onDragStart={onDragStart}
-                    isDragging={draggedTask?.id === task.id}
-                    showViewModal={showViewModal}
-                    showDeleteModal={showDeleteModal}
-                />
+                    <TaskCard
+                        key={task.id}
+                        task={task}
+                        onDragStart={onDragStart}
+                        isDragging={draggedTask?.id === task.id}
+                        showViewModal={showViewModal}
+                        showDeleteModal={showDeleteModal}
+                    />
                 ))}
-            </Box>
-        </ColumnPaper>
+            </div>
+        </div>
     );
 }
 
@@ -325,12 +262,12 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({taskList, showViewModal, showD
     }
 
     return (
-        <Box display="flex" gap={3} sx={{ overflowX: 'auto', pb: 2 }}>
+        <div className="flex gap-6 overflow-x-auto pb-4">
             {Object.entries(columns).map(([columnKey, column]) => {
                 const status = getStatusFromColumnKey(columnKey);
 
                 return(
-                    <Box
+                    <div
                         key={columnKey}
                         onDragEnter={() => handleDragEnter(columnKey)}
                         onDragLeave={handleDragLeave}
@@ -349,10 +286,10 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({taskList, showViewModal, showD
                             showDeleteModal={showDeleteModal}
                             onAddTask={handleAddTask}
                         />
-                    </Box>
+                    </div>
                 )
             })}
-        </Box>
+        </div>
     )
 };
 

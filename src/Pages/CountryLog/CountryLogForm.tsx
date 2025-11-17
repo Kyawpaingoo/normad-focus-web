@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
 import type { upsertCountryLog } from "../../dtos/countryLogDtos";
 import SidebarModal from "../../Components/SidebarModal";
-import { Button, Stack, TextField } from "@mui/material";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
 import { formatDateTimeForInput } from "../../Ultils/Helper";
 
 interface CountryLogProps {
@@ -85,53 +87,65 @@ const CountryLogForm: React.FC<CountryLogProps> = ({open, onClose, onSubmit, def
             title={defaultValues ? 'Edit Country Log' : 'Add Country Log'}
         >
 
-            <Stack spacing={2}>
-                <TextField 
-                    label='Country Name' 
-                    variant="standard" 
-                    fullWidth value={form.country_name} 
-                    onChange={(e) => handleChange('country_name', e.target.value)}
-                />
+            <div className="flex flex-col gap-4">
+                <div className="flex flex-col gap-2">
+                    <Label htmlFor="country-name">Country Name</Label>
+                    <Input
+                        id="country-name"
+                        value={form.country_name}
+                        onChange={(e) => handleChange('country_name', e.target.value)}
+                    />
+                </div>
 
-                <TextField
-                    label='Visa Type' 
-                    variant="standard" 
-                    fullWidth value={form.visa_type} 
-                    onChange={(e) => handleChange('visa_type', e.target.value)}
-                />
+                <div className="flex flex-col gap-2">
+                    <Label htmlFor="visa-type">Visa Type</Label>
+                    <Input
+                        id="visa-type"
+                        value={form.visa_type}
+                        onChange={(e) => handleChange('visa_type', e.target.value)}
+                    />
+                </div>
 
-                <TextField
-                    label="Entry Date"
-                    type="datetime-local"
-                    fullWidth
-                    variant="standard"
-                    value={formatDateTimeForInput(form.entry_date)}
-                    onChange={(e) => handleEntryDateChange(e.target.value)}
-                />
+                <div className="flex flex-col gap-2">
+                    <Label htmlFor="entry-date">Entry Date</Label>
+                    <Input
+                        id="entry-date"
+                        type="datetime-local"
+                        value={formatDateTimeForInput(form.entry_date)}
+                        onChange={(e) => handleEntryDateChange(e.target.value)}
+                    />
+                </div>
 
-                <TextField
-                    label="Exit Date"
-                    type="datetime-local"
-                    fullWidth
-                    variant="standard"
-                    value={formatDateTimeForInput(form.exit_date)}
-                    onChange={(e) => handleExitDateChange(e.target.value)}
-                />
+                <div className="flex flex-col gap-2">
+                    <Label htmlFor="exit-date">Exit Date</Label>
+                    <Input
+                        id="exit-date"
+                        type="datetime-local"
+                        value={formatDateTimeForInput(form.exit_date)}
+                        onChange={(e) => handleExitDateChange(e.target.value)}
+                    />
+                </div>
 
-                <TextField
-                    label="Notify Date"
-                    type="datetime-local"
-                    fullWidth
-                    variant="standard"
-                    value={formatDateTimeForInput(form.notify_at)}
-                    onChange={(e) => handleNotfiyDateChange(e.target.value)}
-                />
-            </Stack>
+                <div className="flex flex-col gap-2">
+                    <Label htmlFor="notify-date">Notify Date</Label>
+                    <Input
+                        id="notify-date"
+                        type="datetime-local"
+                        value={formatDateTimeForInput(form.notify_at)}
+                        onChange={(e) => handleNotfiyDateChange(e.target.value)}
+                    />
+                </div>
 
-            <Stack direction={'row'} spacing={2} mt={2} justifyContent={'flex-end'}>
-                <Button variant="contained" onClick={onClose}>Cancel</Button>
-                <Button variant="contained" onClick={handleSave}>Confirm</Button>
-            </Stack>
+                <div className="flex flex-col gap-2">
+                    <Label>Visa Limit Days</Label>
+                    <p className="text-sm text-muted-foreground">{form.visa_limit_days} days</p>
+                </div>
+            </div>
+
+            <div className="flex flex-row gap-2 mt-4 justify-end">
+                <Button variant="outline" onClick={onClose}>Cancel</Button>
+                <Button onClick={handleSave}>Confirm</Button>
+            </div>
         </SidebarModal>
     )
 }

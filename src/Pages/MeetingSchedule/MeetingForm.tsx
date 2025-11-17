@@ -1,6 +1,8 @@
-import { Stack, TextField, Button } from "@mui/material"
 import SidebarModal from "../../Components/SidebarModal"
 import React, { useState, useEffect } from "react";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
 import type { upsertMeetingSchdeuleDto } from "../../dtos/meetingScheduleDtos";
 import { formatDateTimeForInput } from "../../Ultils/Helper";
 
@@ -57,50 +59,55 @@ const MeetingForm: React.FC<MeetingFormProps> = ({open, onClose, onSubmit, defau
         <SidebarModal
             open={open}
             onClose={onClose}
-            title={defaultValues ? 'Edit Expense' : 'Add Expense'}
+            title={defaultValues ? 'Edit Meeting' : 'Add Meeting'}
         >
 
-            <Stack spacing={2}>
-                <TextField 
-                    label='Title' 
-                    variant="standard" 
-                    fullWidth value={form.title} 
-                    onChange={(e) => handleChange('title', e.target.value)}
-                />
+            <div className="flex flex-col gap-4">
+                <div className="flex flex-col gap-2">
+                    <Label htmlFor="title">Title</Label>
+                    <Input
+                        id="title"
+                        value={form.title}
+                        onChange={(e) => handleChange('title', e.target.value)}
+                    />
+                </div>
 
-                <TextField
-                    id="outlined-multiline-static"
-                    label="Note"
-                    fullWidth
-                    value={form.description}
-                    multiline
-                    rows={4}
-                    onChange={(e) => handleChange('description', e.target.value)}
-                />
+                <div className="flex flex-col gap-2">
+                    <Label htmlFor="description">Description</Label>
+                    <textarea
+                        id="description"
+                        className="flex min-h-[80px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                        value={form.description}
+                        rows={4}
+                        onChange={(e) => handleChange('description', e.target.value)}
+                    />
+                </div>
 
-                <TextField
-                    label="Date"
-                    type="datetime-local"
-                    fullWidth
-                    variant="standard"
-                    value={formatDateTimeForInput(form.start_time)}
-                    onChange={(e) => handleStartTimeChange(e.target.value)}
-                />
+                <div className="flex flex-col gap-2">
+                    <Label htmlFor="start-time">Start Time</Label>
+                    <Input
+                        id="start-time"
+                        type="datetime-local"
+                        value={formatDateTimeForInput(form.start_time)}
+                        onChange={(e) => handleStartTimeChange(e.target.value)}
+                    />
+                </div>
 
-                <TextField
-                    label="Date"
-                    type="datetime-local"
-                    fullWidth
-                    variant="standard"
-                    value={formatDateTimeForInput(form.end_time)}
-                    onChange={(e) => handleEndTimeChange(e.target.value)}
-                />
-            </Stack>
+                <div className="flex flex-col gap-2">
+                    <Label htmlFor="end-time">End Time</Label>
+                    <Input
+                        id="end-time"
+                        type="datetime-local"
+                        value={formatDateTimeForInput(form.end_time)}
+                        onChange={(e) => handleEndTimeChange(e.target.value)}
+                    />
+                </div>
+            </div>
 
-            <Stack direction={'row'} spacing={2} mt={2} justifyContent={'flex-end'}>
-                <Button variant="contained" onClick={onClose}>Cancel</Button>
-                <Button variant="contained" onClick={handleSave}>Confirm</Button>
-            </Stack>
+            <div className="flex flex-row gap-2 mt-4 justify-end">
+                <Button variant="outline" onClick={onClose}>Cancel</Button>
+                <Button onClick={handleSave}>Confirm</Button>
+            </div>
         </SidebarModal>
     )
 }

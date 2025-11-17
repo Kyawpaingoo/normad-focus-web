@@ -1,20 +1,7 @@
 import React from 'react'
-import {Grid, Paper} from '@mui/material';
-import {styled} from '@mui/material/styles';
 import type { AdditionalData } from '../../dtos/expenseDtos';
 import ExpenseBreakdownCard from './ExpenseBreakdownCard';
 import IncomeVsExpenseCard from './IncomeVsExpenseCard';
-
-const Item = styled(Paper)(({ theme }) => ({
-  backgroundColor: '#fff',
-  ...theme.typography.body2,
-  padding: theme.spacing(2),
-  textAlign: 'center',
-  color: (theme.vars ?? theme).palette.text.secondary,
-  ...theme.applyStyles('dark', {
-    backgroundColor: '#1A2027',
-  }),
-}));
 
 interface ExpenseStatsCardsProps {
   additionalData: AdditionalData | null
@@ -22,18 +9,14 @@ interface ExpenseStatsCardsProps {
 
 const ExpenseStatsCards : React.FC<ExpenseStatsCardsProps> = ({additionalData}) => {
     return (
-        <Grid container spacing={2} sx={{mb: 2}}>
-            <Grid size={4}>
-                <Item>
-                    <ExpenseBreakdownCard expenseBreakdown={additionalData?.expenseBreakdown} />
-                </Item>
-            </Grid>
-            <Grid size={4}>
-                <Item>
-                    <IncomeVsExpenseCard incomeVsExpense={additionalData?.incomeVsExpense} />
-                </Item>
-            </Grid>
-        </Grid>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
+            <div className="bg-white p-4 text-center">
+                <ExpenseBreakdownCard expenseBreakdown={additionalData?.expenseBreakdown ?? null} />
+            </div>
+            <div className="bg-white p-4 text-center">
+                <IncomeVsExpenseCard incomeVsExpense={additionalData?.incomeVsExpense ?? null} />
+            </div>
+        </div>
     )
 }
 

@@ -1,19 +1,9 @@
 import React from "react";
-import {
-    Box,
-    Button,
-    Paper,
-    Table,
-    TableBody,
-    TableCell,
-    TableContainer,
-    TableHead,
-    TableRow,
-    Typography,
-    Pagination
-} from "@mui/material";
 import dayjs from 'dayjs';
 import type { ExpenseDto, deleteData } from "../../dtos/expenseDtos";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Button } from "@/components/ui/button";
+import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react";
 
 interface ExpenseTableProps {
     expenses: ExpenseDto[];
@@ -26,24 +16,24 @@ interface ExpenseTableProps {
 
 const ExpenseTable: React.FC<ExpenseTableProps> = ({ expenses, totalPages, currentPage, onPageChange, onViewDetails, onDelete }) => {
     return (
-        <Paper elevation={0} sx={{borderRadius: 2, border: '1px solid #E7EAEE', p: 2}}>
-             <Typography variant="h6" sx={{mb: 2, fontWeight: 700}}>
+        <div className="rounded-lg border border-[#E7EAEE] p-4">
+            <h2 className="text-lg font-bold mb-4">
                 Expense & Income
-            </Typography>
-            
-            <TableContainer>
-                <Table size="small">
-                    <TableHead>
+            </h2>
+
+            <div className="overflow-auto">
+                <Table>
+                    <TableHeader>
                         <TableRow>
-                            <TableCell>Date</TableCell>
-                            <TableCell>Title</TableCell>
-                            <TableCell>Category</TableCell>
-                            <TableCell>Currency</TableCell>
-                            <TableCell>Amount</TableCell>
-                            <TableCell>Type</TableCell>
-                            <TableCell>Actions</TableCell>
+                            <TableHead>Date</TableHead>
+                            <TableHead>Title</TableHead>
+                            <TableHead>Category</TableHead>
+                            <TableHead>Currency</TableHead>
+                            <TableHead>Amount</TableHead>
+                            <TableHead>Type</TableHead>
+                            <TableHead>Actions</TableHead>
                         </TableRow>
-                    </TableHead>
+                    </TableHeader>
 
                     <TableBody>
                         {expenses.map((row) => (
@@ -55,41 +45,69 @@ const ExpenseTable: React.FC<ExpenseTableProps> = ({ expenses, totalPages, curre
                                 <TableCell>{row.amount}</TableCell>
                                 <TableCell>{row.type}</TableCell>
                                 <TableCell>
-                                    <Button 
-                                        variant="text" 
-                                        color="primary" 
-                                        sx={{ mr: 1 }} 
-                                        onClick={() => onViewDetails(row)}
-                                    >
-                                        View Details
-                                    </Button>
-                                    |
-                                    <Button 
-                                        variant="text" 
-                                        color="error" 
-                                        sx={{ ml: 1 }}  
-                                        onClick={() => onDelete({id: row.id, userId: row.user_id})}
-                                    >
-                                        Delete
-                                    </Button>
+                                    <div className="flex items-center gap-2">
+                                        <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            onClick={() => onViewDetails(row)}
+                                        >
+                                            View Details
+                                        </Button>
+                                        <span className="text-muted-foreground">|</span>
+                                        <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            className="text-destructive hover:text-destructive"
+                                            onClick={() => onDelete({id: row.id, userId: row.user_id})}
+                                        >
+                                            Delete
+                                        </Button>
+                                    </div>
                                 </TableCell>
                             </TableRow>
                         ))}
                     </TableBody>
                 </Table>
-            </TableContainer>
+            </div>
 
-            <Box display='flex' justifyContent={'center'} sx={{mt: 2}}>
-                <Pagination 
-                    count={totalPages}
-                    page={currentPage}
-                    onChange={(e, value) => onPageChange(value)}
-                    shape="rounded"
-                    showFirstButton
-                    showLastButton
-                />
-            </Box>
-        </Paper>
+            <div className="flex justify-center items-center gap-2 mt-4">
+                <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => onPageChange(1)}
+                    disabled={currentPage === 1}
+                >
+                    <ChevronsLeft className="h-4 w-4" />
+                </Button>
+                <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => onPageChange(currentPage - 1)}
+                    disabled={currentPage === 1}
+                >
+                    <ChevronLeft className="h-4 w-4" />
+                </Button>
+                <span className="text-sm">
+                    Page {currentPage} of {totalPages}
+                </span>
+                <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => onPageChange(currentPage + 1)}
+                    disabled={currentPage === totalPages}
+                >
+                    <ChevronRight className="h-4 w-4" />
+                </Button>
+                <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => onPageChange(totalPages)}
+                    disabled={currentPage === totalPages}
+                >
+                    <ChevronsRight className="h-4 w-4" />
+                </Button>
+            </div>
+        </div>
     )
 }
 

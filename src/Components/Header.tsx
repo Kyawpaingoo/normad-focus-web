@@ -1,56 +1,50 @@
 import React from 'react';
-import { AppBar, Box, IconButton, Toolbar, Typography, type PaletteMode } from '@mui/material';
-import { Menu as MenuIcon, LightMode as LightModeIcon, DarkMode as DarkModeIcon} from '@mui/icons-material';
+import { Menu, Sun, Moon } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import NotificationMenu from './NotificationMenu';
 
 interface HeaderProps {
     userId: number,
-    mode: PaletteMode
+    mode: 'light' | 'dark'
     handleToggleTheme: ()=> void;
     handleToggleDrawer: () => void;
 }
 const Header: React.FC<HeaderProps> = ({userId, mode, handleToggleTheme, handleToggleDrawer}) => {
-    
+
     return (
-        <AppBar position='static'>
-            <Toolbar>
-                <IconButton
-                    color='inherit'
-                    edge='start'
+        <header className="bg-primary text-primary-foreground">
+            <div className="flex items-center px-4 py-3">
+                <Button
+                    variant="ghost"
+                    size="icon"
                     onClick={handleToggleDrawer}
+                    className="text-primary-foreground hover:bg-primary-foreground/10"
                 >
-                    <MenuIcon />
-                </IconButton>
+                    <Menu className="h-5 w-5" />
+                </Button>
 
-                <Typography sx={{flexGrow: 1, ml: 2}}>
+                <span className="flex-1 ml-4 text-lg font-medium">
                     Nomad Focus
-                </Typography>
+                </span>
 
-                <Box>
+                <div className="flex items-center gap-2">
                     <NotificationMenu userId={userId} />
-                </Box>
 
-                {
-                    mode === 'dark' ? (
-                        <IconButton
-                            color='inherit'
-                            edge='end'
-                            onClick={handleToggleTheme}
-                        >
-                            <LightModeIcon />
-                        </IconButton>
-                    ) : (
-                        <IconButton
-                            color='inherit'
-                            edge='end'
-                            onClick={handleToggleTheme}
-                        >
-                            <DarkModeIcon />
-                        </IconButton>
-                    )
-                }
-            </Toolbar>
-        </AppBar>
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={handleToggleTheme}
+                        className="text-primary-foreground hover:bg-primary-foreground/10"
+                    >
+                        {mode === 'dark' ? (
+                            <Sun className="h-5 w-5" />
+                        ) : (
+                            <Moon className="h-5 w-5" />
+                        )}
+                    </Button>
+                </div>
+            </div>
+        </header>
     )
 }
 

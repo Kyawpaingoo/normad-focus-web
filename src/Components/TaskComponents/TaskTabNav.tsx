@@ -1,5 +1,5 @@
-import React, { useCallback } from 'react';
-import { Tab, Tabs } from '@mui/material';
+import React from 'react';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import type { ViewMode } from '../../dtos/responseDtos';
 import { TAB_NAV_LIST } from '../../Ultils/taskData';
 
@@ -9,39 +9,23 @@ interface TaskTabNavProps {
 }
 
 const TaskTabNav: React.FC<TaskTabNavProps> = ({ activeTab, onTabChange }) => {
-    const handleTabChange = useCallback((_: React.SyntheticEvent, newValue: ViewMode) => {
-        onTabChange(newValue);
-    }, [onTabChange]);
-
     return (
         <Tabs
             value={activeTab}
-            onChange={handleTabChange}
-            sx={{
-                minHeight: 40,
-                '& .MuiTabs-indicator': { 
-                background: '#222', 
-                height: 2, 
-                borderRadius: 1 
-                },
-            }}
-            aria-label="Task view tabs"
+            onValueChange={(value) => onTabChange(value as ViewMode)}
+            className="w-auto"
         >
-            {TAB_NAV_LIST.map((tab) => (
-                <Tab
-                key={tab.value}
-                label={tab.label}
-                value={tab.value}
-                sx={{
-                    minHeight: 40,
-                    fontWeight: tab.value === activeTab ? 600 : 500,
-                    color: '#222',
-                    textTransform: 'none',
-                    opacity: tab.value === activeTab ? 1 : 0.7,
-                    mr: 2,
-                }}
-                />
-            ))}
+            <TabsList className="h-10 bg-transparent p-0 border-b border-border rounded-none">
+                {TAB_NAV_LIST.map((tab) => (
+                    <TabsTrigger
+                        key={tab.value}
+                        value={tab.value}
+                        className="h-10 rounded-none border-b-2 border-transparent data-[state=active]:border-foreground data-[state=active]:bg-transparent data-[state=active]:shadow-none mr-4 px-0"
+                    >
+                        {tab.label}
+                    </TabsTrigger>
+                ))}
+            </TabsList>
         </Tabs>
     );
 };

@@ -1,6 +1,12 @@
 import React from 'react';
-import { Modal, Box, Button, Stack, Typography, IconButton} from '@mui/material';
-import CloseIcon from '@mui/icons-material/Close';
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogFooter,
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
 
 interface PopupModalProps {
     open: boolean;
@@ -12,30 +18,22 @@ interface PopupModalProps {
 
 const PopupModal: React.FC<PopupModalProps> =({open, onClose, title, children, onConfirm}) => {
     return (
-        <Modal
-            open={open}
-            onClose={onClose}
-            aria-labelledby="modal-modal-title"
-            aria-describedby="modal-modal-description"
-        >
-            <Box sx={{position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: 400, bgcolor: 'background.paper', border: '2px solid #000', boxShadow: 24, p: 4}}>
-                <Stack direction={'row'} justifyContent={'space-between'} alignItems={'center'} mb={2}>
-                    <Typography id="modal-modal-title" variant="h6" component="h2">
-                        {title}
-                    </Typography>
-                    <IconButton onClick={onClose}>
-                        <CloseIcon />
-                    </IconButton>
-                </Stack>
-                
-                {children}
+        <Dialog open={open} onOpenChange={onClose}>
+            <DialogContent className="max-w-md">
+                <DialogHeader>
+                    <DialogTitle>{title}</DialogTitle>
+                </DialogHeader>
 
-                <Stack direction={'row'} spacing={2} justifyContent={'flex-end'}>
-                    <Button onClick={onClose}>Cancel</Button>
+                <div className="py-4">
+                    {children}
+                </div>
+
+                <DialogFooter className="flex flex-row gap-2 justify-end">
+                    <Button variant="outline" onClick={onClose}>Cancel</Button>
                     <Button onClick={onConfirm}>Confirm</Button>
-                </Stack>
-            </Box>
-        </Modal>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
     )
 }
 

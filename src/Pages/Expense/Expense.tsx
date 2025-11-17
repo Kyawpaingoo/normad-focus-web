@@ -1,10 +1,3 @@
-import { 
-    Alert, 
-    Box, 
-    Button, 
-    Typography
-} from "@mui/material";
-
 import React, { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { getExpenseByPaging } from "../../ApiRequestHelpers/expenseApiRequest";
@@ -18,6 +11,8 @@ import { useExpenseMutations } from "../../Hooks/useExpenseMutation";
 import ExpenseFilters from "../../Components/ExpenseComponents/ExpenseFilters";
 import ExpenseStatsCards from "../../Components/ExpenseComponents/ExpenseStatsCards";
 import ExpenseTable from "../../Components/ExpenseComponents/ExpenseTable";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
 
 const ExpenseDashboard : React.FC = () => {
     
@@ -35,10 +30,10 @@ const ExpenseDashboard : React.FC = () => {
     
     const {isLoading, isError, data, error} = useQuery<PaginationResponse<ExpenseDto>, Error>({
         queryKey: queryKey,
-        queryFn: async () => await getExpenseByPaging(filters.page, filters.pageSize, auth.id, filters.year ?? 2025, filters.month ?? 6, filters.sortDir ?? 'desc', filters.searchQuery ?? '', filters.category ?? '', filters.type ?? ''),
+        queryFn: async () => await getExpenseByPaging(filters.page, filters.pageSize, auth?.id ?? 0, filters.year ?? 2025, filters.month ?? 6, filters.sortDir ?? 'desc', filters.searchQuery ?? '', filters.category ?? '', filters.type ?? ''),
     });
 
-    const { addExpense, editExpense, removeExpense } = useExpenseMutations(queryKey, filters.page, filters.pageSize, auth.id);
+    const { addExpense, editExpense, removeExpense } = useExpenseMutations(queryKey, filters.page, filters.pageSize, auth?.id ?? 0);
 
     const additionalData = useMemo<AdditionalData | null>(()=> {
         if(data?.additionalData) {
@@ -99,31 +94,33 @@ const ExpenseDashboard : React.FC = () => {
     if(isError)
     {
         return (
-        <Box>
-            <Alert severity='warning'>{error.message}</Alert>
-        </Box>
+            <div className="p-4">
+                <Alert variant="destructive">
+                    <AlertDescription>{error.message}</AlertDescription>
+                </Alert>
+            </div>
         )
     }
 
     if(isLoading)
     {
         return (
-        <Box sx={{ textAlign: 'center'}}>
-            Loading...
-        </Box>
+            <div className="text-center p-4">
+                Loading...
+            </div>
         )
     }
 
     return (
-        <Box sx={{p: 4, minHeight: '100vh'}}>
+        <div className="p-8 min-h-screen">
 
-            <Box mb={2} display='flex' justifyContent='space-between' alignItems='center'>
-                <Typography variant="h4" fontWeight={700}>Expenses</Typography>
-                
-                <Button variant="contained" color='primary' onClick={()=>showExpenseFormModal(null)}>
+            <div className="mb-4 flex justify-between items-center">
+                <h1 className="text-3xl font-bold">Expenses</h1>
+
+                <Button onClick={()=>showExpenseFormModal(null)}>
                     Add New
                 </Button>
-            </Box>
+            </div>
 
             {
                 additionalData && (
@@ -131,13 +128,13 @@ const ExpenseDashboard : React.FC = () => {
                 )
             }
 
-            <ExpenseFilters 
+            <ExpenseFilters
                 filters={filters}
                 handlers={handlers}
                 setShowFilters={setters.setShowFilters}
                 getActiveFiltersCount={utils.getActiveFiltersCount}
             />
-            
+
             <ExpenseTable
                 expenses={data?.results || []}
                 totalPages={data?.totalPage || 0}
@@ -148,11 +145,11 @@ const ExpenseDashboard : React.FC = () => {
             />
 
             <PopupModal open={isDeleteModalOpen} onClose={closeDeleteModal} onConfirm={handleDelete} title='Delete Expense'>
-                <Typography>Are you sure you want to delete this item</Typography>
+                <p>Are you sure you want to delete this item?</p>
             </PopupModal>
 
             <ExpenseForm open={isExpenseFormModalOpen} onClose={closeExpenseFormModal} onSubmit={handleExpenseFormSubmit} defaultValues={expenseForm} />
-        </Box>
+        </div>
     )
 }
 
