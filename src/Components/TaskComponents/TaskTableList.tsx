@@ -1,9 +1,12 @@
 import type React from "react";
 import type { InfiniteScrollResponse } from "../../dtos/responseDtos";
 import type { TaskDto } from "../../dtos/taskDto";
-import { Box, Button, CircularProgress, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography } from "@mui/material";
 import { useCallback, useEffect, useRef } from "react";
 import { getTablePriorityBackgroundColor, getTablePriorityColor, getTableStatusBackgroundColor, getTableStatusColor, getTaskDateFormat } from "../../Ultils/Helper";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Loader2 } from "lucide-react";
 
 interface TaskTableListProps {
     taskList: InfiniteScrollResponse<TaskDto>;   
@@ -56,86 +59,50 @@ const TaskTableList: React.FC<TaskTableListProps> = ({taskList, showViewDetail, 
 
     if(!results.length) {
         return (
-            <TableContainer
-                component={Paper}
-                sx={{
-                    borderRadius: 2,
-                    border: "1px solid #E7EAEE",
-                    boxShadow: "none",
-                    mt: 1,
-                    minHeight: 300,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center'
-                }}
-            >
-                <Typography variant="body1" color="text.secondary">
+            <div className="rounded-lg border border-[#E7EAEE] mt-1 min-h-[300px] flex items-center justify-center">
+                <p className="text-muted-foreground">
                     No tasks found
-                </Typography>
-            </TableContainer>
+                </p>
+            </div>
         )
     }
 
     return (
-        <TableContainer
+        <div
             ref={tableContainerRef}
             onScroll={handleScroll}
-            component={Paper}
-             sx={{
-                borderRadius: 2,
-                border: "1px solid #E7EAEE",
-                boxShadow: "none",
-                mt: 1,
-                minHeight: 300
-            }}
+            className="rounded-lg border border-[#E7EAEE] mt-1 min-h-[300px] overflow-auto"
         >
-            <Table stickyHeader>
-                <TableHead>
+            <Table>
+                <TableHeader className="sticky top-0 bg-[#f5f5f5]">
                     <TableRow>
-                        <TableCell sx={{fontWeight: 600, backgroundColor: '#f5f5f5'}}>Title</TableCell>
-                        <TableCell sx={{ fontWeight: 600, backgroundColor: '#f5f5f5' }}>Status</TableCell>
-                        <TableCell sx={{ fontWeight: 600, backgroundColor: '#f5f5f5' }}>Start Date</TableCell>
-                        <TableCell sx={{ fontWeight: 600, backgroundColor: '#f5f5f5' }}>Due Date</TableCell>
-                        <TableCell sx={{ fontWeight: 600, backgroundColor: '#f5f5f5' }}>Priority</TableCell>
-                        <TableCell sx={{ fontWeight: 600, backgroundColor: '#f5f5f5' }}>Actions</TableCell>
+                        <TableHead className="font-semibold">Title</TableHead>
+                        <TableHead className="font-semibold">Status</TableHead>
+                        <TableHead className="font-semibold">Start Date</TableHead>
+                        <TableHead className="font-semibold">Due Date</TableHead>
+                        <TableHead className="font-semibold">Priority</TableHead>
+                        <TableHead className="font-semibold">Actions</TableHead>
                     </TableRow>
-                </TableHead>
+                </TableHeader>
                 <TableBody>
                     {results.map((data: TaskDto, index: number) => (
-                        <TableRow 
+                        <TableRow
                             key={`${data.id}-${index}`}
-                            hover
-                            sx={{ 
-                                '&:nth-of-type(odd)': { 
-                                    backgroundColor: '#fafafa' 
-                                },
-                                '&:hover': {
-                                    backgroundColor: '#f0f0f0'
-                                }
-                            }}
+                            className="odd:bg-[#fafafa] hover:bg-[#f0f0f0]"
                         >
-                            <TableCell sx={{ maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                            <TableCell className="max-w-[200px] overflow-hidden text-ellipsis">
                                 {data.title}
                             </TableCell>
                             <TableCell>
-                                <Box
-                                    sx={{
-                                        px: 1,
-                                        py: 0.5,
-                                        borderRadius: 1,
-                                        backgroundColor: 
-                                            getTableStatusBackgroundColor(data.status),
-                                        color:
-                                            getTableStatusColor(data.status),
-                                        fontWeight: 500,
-                                        fontSize: '0.75rem',
-                                        textAlign: 'center',
-                                        minWidth: 70,
-                                        display: 'inline-block'
+                                <Badge
+                                    className="min-w-[70px] justify-center"
+                                    style={{
+                                        backgroundColor: getTableStatusBackgroundColor(data.status),
+                                        color: getTableStatusColor(data.status)
                                     }}
                                 >
                                     {data.status}
-                                </Box>
+                                </Badge>
                             </TableCell>
                             <TableCell>
                                 {getTaskDateFormat(data.start_date)}
@@ -144,46 +111,35 @@ const TaskTableList: React.FC<TaskTableListProps> = ({taskList, showViewDetail, 
                                 {getTaskDateFormat(data.due_date)}
                             </TableCell>
                             <TableCell>
-                                <Box
-                                    sx={{
-                                        px: 1,
-                                        py: 0.5,
-                                        borderRadius: 1,
-                                        backgroundColor: 
-                                            getTablePriorityBackgroundColor(data.priority),
-                                        color:
-                                            getTablePriorityColor(data.priority),
-                                        fontWeight: 500,
-                                        fontSize: '0.75rem',
-                                        textAlign: 'center',
-                                        minWidth: 60,
-                                        display: 'inline-block'
+                                <Badge
+                                    className="min-w-[60px] justify-center"
+                                    style={{
+                                        backgroundColor: getTablePriorityBackgroundColor(data.priority),
+                                        color: getTablePriorityColor(data.priority)
                                     }}
                                 >
                                     {data.priority}
-                                </Box>
+                                </Badge>
                             </TableCell>
                             <TableCell>
-                                <Box sx={{ display: 'flex', gap: 1 }}>
-                                    <Button 
-                                        variant="contained" 
-                                        color="primary" 
-                                        size="small"
+                                <div className="flex gap-2">
+                                    <Button
+                                        variant="default"
+                                        size="sm"
                                         onClick={() => showViewDetail(data)}
-                                        sx={{ minWidth: 80 }}
+                                        className="min-w-[80px]"
                                     >
                                         View
                                     </Button>
-                                    <Button 
-                                        variant="contained" 
-                                        color="error" 
-                                        size="small"
+                                    <Button
+                                        variant="destructive"
+                                        size="sm"
                                         onClick={() => showDeleteModal(data)}
-                                        sx={{ minWidth: 80 }}
+                                        className="min-w-[80px]"
                                     >
                                         Delete
                                     </Button>
-                                </Box>
+                                </div>
                             </TableCell>
                         </TableRow>
                     ))}
@@ -193,39 +149,22 @@ const TaskTableList: React.FC<TaskTableListProps> = ({taskList, showViewDetail, 
             <div ref={loadingTriggerRef} style={{ height: '20px' }} />
 
             {isLoadingMore && (
-                <Box 
-                    sx={{ 
-                        display: 'flex', 
-                        justifyContent: 'center', 
-                        alignItems: 'center',
-                        p: 2,
-                        borderTop: '1px solid #E7EAEE'
-                    }}
-                >
-                    <CircularProgress size={20} sx={{ mr: 1 }} />
-                    <Typography variant="body2" color="text.secondary">
+                <div className="flex justify-center items-center p-4 border-t border-[#E7EAEE]">
+                    <Loader2 className="h-5 w-5 animate-spin mr-2" />
+                    <p className="text-sm text-muted-foreground">
                         Loading more tasks...
-                    </Typography>
-                </Box>
+                    </p>
+                </div>
             )}
 
             {!taskList?.hasNextPage && results.length > 0 && (
-                <Box 
-                    sx={{ 
-                        display: 'flex', 
-                        justifyContent: 'center', 
-                        alignItems: 'center',
-                        p: 2,
-                        borderTop: '1px solid #E7EAEE',
-                        backgroundColor: '#fafafa'
-                    }}
-                >
-                    <Typography variant="body2" color="text.secondary">
+                <div className="flex justify-center items-center p-4 border-t border-[#E7EAEE] bg-[#fafafa]">
+                    <p className="text-sm text-muted-foreground">
                         No more tasks to load
-                    </Typography>
-                </Box>
+                    </p>
+                </div>
             )}
-        </TableContainer>
+        </div>
     )
 }
 

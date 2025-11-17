@@ -1,6 +1,15 @@
-import { Stack, TextField, Button, MenuItem } from "@mui/material"
 import SidebarModal from "../../Components/SidebarModal"
 import React, { useState, useEffect, useRef, useMemo, useCallback } from "react";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
 import type { upsertTaskDto } from "../../dtos/taskDto";
 import { formatDateTimeForInput, toBase64 } from "../../Ultils/Helper";
 import ReactQuill from 'react-quill';
@@ -164,62 +173,92 @@ const TaskForm: React.FC<TaskFormProps> = ({open, onClose, onSubmit, defaultValu
             onClose={onClose}
             title={defaultValue ? "Edit Task" : "Add Task"}
         >
-            <Stack spacing={2}>
-                <TextField
-                    label="Title"
-                    variant="outlined"
-                    value={form.title}
-                    onChange={(e) => handleChange('title', e.target.value)}
-                />
-                <ReactQuill
-                    key={defaultValue?.id || 'new-task'}
-                    value={quillContent}
-                    ref={quillRef}
-                    onChange={handleQuillChange}
-                    modules={modules}
-                    theme="snow"
-                    style={{ height: "200px", marginBottom: "80px" }}
-                />
+            <div className="flex flex-col gap-4">
+                <div className="flex flex-col gap-2">
+                    <Label htmlFor="title">Title</Label>
+                    <Input
+                        id="title"
+                        value={form.title ?? ''}
+                        onChange={(e) => handleChange('title', e.target.value)}
+                    />
+                </div>
 
-                <TextField id="task-status-select" select label="Select Status" value={form.status} onChange={(e)=> handleChange('status', e.target.value)}>
-                    <MenuItem value="To Do">To Do</MenuItem>
-                    <MenuItem value="In Progress">In Progress</MenuItem>
-                    <MenuItem value="Done">Done</MenuItem>
-                </TextField>
+                <div className="flex flex-col gap-2">
+                    <Label>Description</Label>
+                    <ReactQuill
+                        key={defaultValue?.id || 'new-task'}
+                        value={quillContent}
+                        ref={quillRef}
+                        onChange={handleQuillChange}
+                        modules={modules}
+                        theme="snow"
+                        style={{ height: "200px", marginBottom: "80px" }}
+                    />
+                </div>
 
-                <TextField id="task-priority-select" select label="Select Priority" value={form.priority} onChange={(e)=> handleChange('priority', e.target.value)} >
-                    <MenuItem value="Low">Low</MenuItem>
-                    <MenuItem value="Medium">Medium</MenuItem>
-                    <MenuItem value="High">High</MenuItem>
-                </TextField>
+                <div className="flex flex-col gap-2">
+                    <Label htmlFor="status">Status</Label>
+                    <Select value={form.status} onValueChange={(value) => handleChange('status', value)}>
+                        <SelectTrigger id="status">
+                            <SelectValue placeholder="Select status" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="To Do">To Do</SelectItem>
+                            <SelectItem value="In Progress">In Progress</SelectItem>
+                            <SelectItem value="Done">Done</SelectItem>
+                        </SelectContent>
+                    </Select>
+                </div>
 
-                <TextField
-                    label="Start Date"
-                    variant="outlined"
-                    type="datetime-local"
-                    value={formatDateTimeForInput(form.start_date ?? new Date())}
-                    onChange={(e) => handleStartDateChange(e.target.value)}
-                />
-                <TextField
-                    label="Due Date"
-                    variant="outlined"
-                    type="datetime-local"
-                    value={formatDateTimeForInput(form.due_date ?? new Date())}
-                    onChange={(e) => handleDueDateChange(e.target.value ?? new Date())}
-                />
-                <TextField
-                    label="Notify At"
-                    variant="outlined"
-                    type="datetime-local"
-                    value={formatDateTimeForInput(form.notify_at ?? new Date())}
-                    onChange={(e) => handleNotifyDateChange(e.target.value)}
-                />
-            </Stack>
+                <div className="flex flex-col gap-2">
+                    <Label htmlFor="priority">Priority</Label>
+                    <Select value={form.priority} onValueChange={(value) => handleChange('priority', value)}>
+                        <SelectTrigger id="priority">
+                            <SelectValue placeholder="Select priority" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="Low">Low</SelectItem>
+                            <SelectItem value="Medium">Medium</SelectItem>
+                            <SelectItem value="High">High</SelectItem>
+                        </SelectContent>
+                    </Select>
+                </div>
 
-            <Stack direction={'row'} spacing={2} mt={2} justifyContent={'flex-end'}>
-                <Button variant="contained" onClick={onClose}>Cancel</Button>
-                <Button variant="contained" onClick={handleSave}>Confirm</Button>
-            </Stack>
+                <div className="flex flex-col gap-2">
+                    <Label htmlFor="start-date">Start Date</Label>
+                    <Input
+                        id="start-date"
+                        type="datetime-local"
+                        value={formatDateTimeForInput(form.start_date ?? new Date())}
+                        onChange={(e) => handleStartDateChange(e.target.value)}
+                    />
+                </div>
+
+                <div className="flex flex-col gap-2">
+                    <Label htmlFor="due-date">Due Date</Label>
+                    <Input
+                        id="due-date"
+                        type="datetime-local"
+                        value={formatDateTimeForInput(form.due_date ?? new Date())}
+                        onChange={(e) => handleDueDateChange(e.target.value ?? new Date())}
+                    />
+                </div>
+
+                <div className="flex flex-col gap-2">
+                    <Label htmlFor="notify-at">Notify At</Label>
+                    <Input
+                        id="notify-at"
+                        type="datetime-local"
+                        value={formatDateTimeForInput(form.notify_at ?? new Date())}
+                        onChange={(e) => handleNotifyDateChange(e.target.value)}
+                    />
+                </div>
+            </div>
+
+            <div className="flex flex-row gap-2 mt-4 justify-end">
+                <Button variant="outline" onClick={onClose}>Cancel</Button>
+                <Button onClick={handleSave}>Confirm</Button>
+            </div>
         </SidebarModal>
     )
 }

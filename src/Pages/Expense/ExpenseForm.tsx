@@ -1,13 +1,22 @@
-import { Stack, TextField, Button, MenuItem } from "@mui/material"
 import SidebarModal from "../../Components/SidebarModal"
 import { useState, useEffect } from "react";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
 import type { upsertExpenseRequestDto } from '../../dtos/expenseDtos';
 
 interface ExpenseFormProps {
     open: boolean
     onClose: () => void,
     onSubmit: (form: upsertExpenseRequestDto) => void;
-    defaultValues: upsertExpenseRequestDto | null; 
+    defaultValues: upsertExpenseRequestDto | null;
 }
 
 const defaultExpense: upsertExpenseRequestDto = {
@@ -40,7 +49,7 @@ const ExpenseForm : React.FC<ExpenseFormProps> = ({open, onClose, onSubmit, defa
         });
     }, [defaultValues]);
 
-    
+
 
     const handleChange = (field: keyof upsertExpenseRequestDto, value: string | number | Date) => {
         setForm(prev => ({ ...prev, [field]: value }));
@@ -67,68 +76,83 @@ const ExpenseForm : React.FC<ExpenseFormProps> = ({open, onClose, onSubmit, defa
             title={defaultValues ? 'Edit Expense' : 'Add Expense'}
         >
 
-            <Stack spacing={2}>
-                <TextField 
-                    label='Title' 
-                    variant="standard" 
-                    fullWidth value={form.title} 
-                    onChange={(e) => handleChange('title', e.target.value)}
-                />
+            <div className="flex flex-col gap-4">
+                <div className="flex flex-col gap-2">
+                    <Label htmlFor="title">Title</Label>
+                    <Input
+                        id="title"
+                        value={form.title ?? ''}
+                        onChange={(e) => handleChange('title', e.target.value)}
+                    />
+                </div>
 
-                <TextField
-                    label="Amount"
-                    variant="standard"
-                    fullWidth
-                    type="number"
-                    value={form.amount}
-                    onChange={(e) => handleChange('amount', parseFloat(e.target.value))}
-                />
+                <div className="flex flex-col gap-2">
+                    <Label htmlFor="amount">Amount</Label>
+                    <Input
+                        id="amount"
+                        type="number"
+                        value={form.amount ?? 0}
+                        onChange={(e) => handleChange('amount', parseFloat(e.target.value))}
+                    />
+                </div>
 
-                <TextField
-                    label="Category"
-                    variant="standard"
-                    fullWidth
-                    value={form.category}
-                    onChange={(e) => handleChange('category', e.target.value)}
-                />
+                <div className="flex flex-col gap-2">
+                    <Label htmlFor="category">Category</Label>
+                    <Input
+                        id="category"
+                        value={form.category ?? ''}
+                        onChange={(e) => handleChange('category', e.target.value)}
+                    />
+                </div>
 
-                <TextField id="expense-type-select" select label="Expense Type" value={form.type} onChange={(e)=> handleChange('type', e.target.value)}>
-                    <MenuItem value="Income">Income</MenuItem>
-                    <MenuItem value="Expense">Expense</MenuItem>
-                </TextField>
+                <div className="flex flex-col gap-2">
+                    <Label htmlFor="expense-type">Expense Type</Label>
+                    <Select value={form.type ?? ''} onValueChange={(value) => handleChange('type', value)}>
+                        <SelectTrigger id="expense-type">
+                            <SelectValue placeholder="Select type" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="Income">Income</SelectItem>
+                            <SelectItem value="Expense">Expense</SelectItem>
+                        </SelectContent>
+                    </Select>
+                </div>
 
-                <TextField
-                    label="Currency"
-                    variant="standard"
-                    fullWidth
-                    value={form.currency}
-                    onChange={(e) => handleChange('currency', e.target.value)}
-                />
+                <div className="flex flex-col gap-2">
+                    <Label htmlFor="currency">Currency</Label>
+                    <Input
+                        id="currency"
+                        value={form.currency ?? ''}
+                        onChange={(e) => handleChange('currency', e.target.value)}
+                    />
+                </div>
 
-                <TextField
-                    label="Date"
-                    type="date"
-                    fullWidth
-                    variant="standard"
-                    value={formatDateForInput(form.expense_date)}
-                    onChange={(e) => handleDateChange(e.target.value)}
-                />
+                <div className="flex flex-col gap-2">
+                    <Label htmlFor="date">Date</Label>
+                    <Input
+                        id="date"
+                        type="date"
+                        value={formatDateForInput(form.expense_date)}
+                        onChange={(e) => handleDateChange(e.target.value)}
+                    />
+                </div>
 
-                <TextField
-                    id="outlined-multiline-static"
-                    label="Note"
-                    fullWidth
-                    value={form.note}
-                    multiline
-                    rows={4}
-                    onChange={(e) => handleChange('note', e.target.value)}
-                />
-            </Stack>
+                <div className="flex flex-col gap-2">
+                    <Label htmlFor="note">Note</Label>
+                    <textarea
+                        id="note"
+                        className="flex min-h-[80px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                        value={form.note ?? ''}
+                        rows={4}
+                        onChange={(e) => handleChange('note', e.target.value)}
+                    />
+                </div>
+            </div>
 
-            <Stack direction={'row'} spacing={2} mt={2} justifyContent={'flex-end'}>
-                <Button variant="contained" onClick={onClose}>Cancel</Button>
-                <Button variant="contained" onClick={handleSave}>Confirm</Button>
-            </Stack>
+            <div className="flex flex-row gap-2 mt-4 justify-end">
+                <Button variant="outline" onClick={onClose}>Cancel</Button>
+                <Button onClick={handleSave}>Confirm</Button>
+            </div>
         </SidebarModal>
     )
 }

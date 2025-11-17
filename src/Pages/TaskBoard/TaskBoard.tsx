@@ -20,11 +20,11 @@ const TaskBoard: React.FC = () => {
     const {auth} = useThemeHook();
     const [viewMode, setViewMode] = useState<ViewMode>('board');
     const [cursor, setCursor] = useState<string>('');
-    const [limit, setLimit] = useState<number>(20);
+    const [limit, _setLimit] = useState<number>(20);
     const [year, setYear] = useState<number>(new Date().getFullYear());
     const [month, setMonth] = useState<number>(new Date().getMonth() + 1);
     const [sortDir, setSortDir] = useState<sortDirection>('desc');
-    const [searchQuery, setSearchQuery] = useState<string>('');
+    const [searchQuery, _setSearchQuery] = useState<string>('');
     const [status, setStatus] = useState<string>('');
     const [priority, setPriority] = useState<string>('');
     const [taskForm, setTaskForm] = useState<upsertTaskDto | null>(null);
@@ -32,7 +32,7 @@ const TaskBoard: React.FC = () => {
     const [isDeleteModalOpen, setDeleteModalOpen] = useState<boolean>(false);
     const [deleteTask, setDeleteTask] = useState<TaskDto | null>(null);
     const [isLoadingMore, setIsLoadingMore] = useState<boolean>(false);
-    const [allTasks, setAllTasks] = useState<TaskDto[]>([]);
+    const [_allTasks, setAllTasks] = useState<TaskDto[]>([]);
 
     const queryKey = ['tasks', viewMode, cursor, limit, year, month, sortDir, searchQuery, status, priority] as const;
 
@@ -40,7 +40,7 @@ const TaskBoard: React.FC = () => {
         mutationFn: async(data: upsertTaskDto) => {
             const taskWithUserId = {
                 ...data,
-                userId: auth?.id || 0
+                userId: auth?.id ?? 0
             }
 
             return await createTask(taskWithUserId);
@@ -168,7 +168,7 @@ const TaskBoard: React.FC = () => {
         },
         onMutate: async({taskId, newStatus}) => {
             queryClient.cancelQueries({queryKey});
-            const prevData = queryClient.getQueryData(queryKey);
+            const prevData = queryClient.getQueryData(queryKey) as FlexibleResponse<TaskDto> | undefined;
 
             if(prevData && isKanbanResponse(prevData)) {
                 queryClient.setQueryData(queryKey, (oldData: KanbanResponse<TaskDto>) => {
@@ -270,7 +270,7 @@ const TaskBoard: React.FC = () => {
 
     const {isLoading, isError, data, error} = useQuery<FlexibleResponse<TaskDto>, Error>({
         queryKey: queryKey,
-        queryFn: async () => await getTaskByView(viewMode,cursor, limit, auth?.id, year, month, sortDir, searchQuery, status, priority)
+        queryFn: async () => await getTaskByView(viewMode,cursor, limit, auth?.id ?? 0, year, month, sortDir, searchQuery, status, priority)
     });
 
     const loadMoreTasks = useCallback(async () => {
@@ -285,7 +285,7 @@ const TaskBoard: React.FC = () => {
                 viewMode,
                 data.nextCursor,
                 limit,
-                auth?.id,
+                auth?.id ?? 0,
                 year,
                 month,
                 sortDir,
@@ -367,7 +367,7 @@ const TaskBoard: React.FC = () => {
             })
         }
         else {
-            const taskForm = {...formData, userId: auth?.id}
+            const taskForm = {...formData, userId: auth?.id ?? 0}
             await addTask.mutateAsync(taskForm as upsertTaskDto);
         }
         setTaskForm(null);

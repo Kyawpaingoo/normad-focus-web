@@ -1,4 +1,3 @@
-import { Box, Container } from "@mui/material";
 import type React from "react";
 import Header from "../Components/Header";
 import { Outlet } from "react-router-dom";
@@ -15,15 +14,15 @@ const MainLayout: React.FC = () => {
         setDrawerOpen(prev => !prev);
     };
 
-    
+
     return (
-        <Box>
-            <Header userId={auth?.id} mode={mode} handleToggleTheme={toggleTheme} handleToggleDrawer={handleDrawerToggle} />
+        <div>
+            <Header userId={auth?.id ?? 0} mode={mode} handleToggleTheme={toggleTheme} handleToggleDrawer={handleDrawerToggle} />
             <AppDrawer open={drawerOpen} onClose={handleDrawerToggle} />
-            <Container maxWidth='xl' sx={{mt:2}}>
+            <div className="container mx-auto px-4 mt-2 max-w-7xl">
                 <Outlet />
-            </Container>
-        </Box>
+            </div>
+        </div>
     )
 }
 

@@ -5,14 +5,18 @@ import { useThemeHook } from "../Context/Theme";
 import { useMutation } from "@tanstack/react-query";
 import type { LoginRequestDto, User } from "../dtos/authDtos";
 import {login} from '../ApiRequestHelpers/authApiRequest';
-import { Alert, Box, Button, Checkbox, FormControlLabel, Grid, InputAdornment, IconButton, Link, Paper, TextField, Typography } from "@mui/material";
-import Visibility from "@mui/icons-material/Visibility";
-import VisibilityOff from "@mui/icons-material/VisibilityOff";
+import { Eye, EyeOff } from "lucide-react";
 import { queryClient } from "../Hooks/QueryClient";
+import { Card } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 const Login: React.FC = () => {
-    const emailInput : React.RefObject<HTMLInputElement | null> = useRef<HTMLInputElement>(null);
-    const passwordInput : React.RefObject<HTMLInputElement | null> = useRef<HTMLInputElement>(null);
+    const emailInput = useRef<HTMLInputElement>(null);
+    const passwordInput = useRef<HTMLInputElement>(null);
 
     const [error, setError] = useState<string | null>(null);
     const [keepSignedIn, setKeepSignedIn] = useState(false);
@@ -51,71 +55,79 @@ const Login: React.FC = () => {
     });
 
     return (
-        <Paper elevation={3} sx={{padding: 4, borderRadius: 2, minWidth: 400, maxWidth: 420}}>
-            <Box mb={2} display='flex' justifyContent='space-between' alignItems='center'>
-                <Typography variant="h4" fontWeight={700}>Login</Typography>
-                
-                <Link href='/register' underline='hover' color='primary'>
+        <Card className="p-8 rounded-lg min-w-[400px] max-w-[420px] shadow-lg">
+            <div className="mb-4 flex justify-between items-center">
+                <h1 className="text-3xl font-bold">Login</h1>
+
+                <a href='/register' className="text-primary hover:underline text-sm">
                     Don't have an account?
-                </Link>
-            </Box>
+                </a>
+            </div>
             {
-                    error && (
-                        <Alert severity='warning'>
+                error && (
+                    <Alert variant="destructive" className="mb-4">
+                        <AlertDescription>
                             {error}
-                        </Alert>
-                    )
+                        </AlertDescription>
+                    </Alert>
+                )
             }
 
-            <Box component={'form'} onSubmit={handleSubmit} mt={2}>
-                <Typography mb={1} fontWeight={500}>Email Address</Typography>
-                <TextField inputRef={emailInput} placeholder="Enter email address" fullWidth />
+            <form onSubmit={handleSubmit} className="mt-4 space-y-4">
+                <div className="space-y-2">
+                    <Label htmlFor="email" className="font-medium">Email Address</Label>
+                    <Input
+                        id="email"
+                        ref={emailInput}
+                        placeholder="Enter email address"
+                        type="email"
+                    />
+                </div>
 
-                <Typography mt={2} mb={1} fontWeight={500}>Password</Typography>
-                <TextField inputRef={passwordInput} type={showPassword ? "text" : "password"} placeholder="Enter password" fullWidth InputProps={{
-                    endAdornment: (
-                        <InputAdornment position="end">
-                        <IconButton onClick={handleTogglePassword} edge="end">
-                            {showPassword ? <Visibility /> : <VisibilityOff />}
-                        </IconButton>
-                        </InputAdornment>
-                    )
-                    }} />
-                <Grid container alignItems="center" justifyContent="space-between" mt={1}>
-                    <Grid>
-                        <FormControlLabel
-                            control={
-                            <Checkbox
-                                checked={keepSignedIn}
-                                onChange={(e) => setKeepSignedIn(e.target.checked)}
-                            />
-                            }
-                            label="Keep me sign in"
+                <div className="space-y-2">
+                    <Label htmlFor="password" className="font-medium">Password</Label>
+                    <div className="relative">
+                        <Input
+                            id="password"
+                            ref={passwordInput}
+                            type={showPassword ? "text" : "password"}
+                            placeholder="Enter password"
+                            className="pr-10"
                         />
-                    </Grid>
-                    <Grid >
-                        <Link href="#" underline="hover" color="inherit">
-                            Forgot Password?
-                        </Link>
-                    </Grid>
-                </Grid>
+                        <button
+                            type="button"
+                            onClick={handleTogglePassword}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                        >
+                            {showPassword ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
+                        </button>
+                    </div>
+                </div>
+
+                <div className="flex items-center justify-between mt-2">
+                    <div className="flex items-center space-x-2">
+                        <Checkbox
+                            id="keep-signed-in"
+                            checked={keepSignedIn}
+                            onCheckedChange={(checked) => setKeepSignedIn(checked === true)}
+                        />
+                        <Label htmlFor="keep-signed-in" className="text-sm font-normal cursor-pointer">
+                            Keep me sign in
+                        </Label>
+                    </div>
+                    <a href="#" className="text-sm hover:underline">
+                        Forgot Password?
+                    </a>
+                </div>
+
                 <Button
                     type="submit"
-                    fullWidth
-                    variant="contained"
-                    sx={{
-                    mt: 3,
-                    backgroundColor: "#1976ff",
-                    fontSize: "1.15rem",
-                    textTransform: "none",
-                    py: 1.2,
-                    borderRadius: 1
-                    }}
+                    className="w-full mt-6 text-lg py-6"
                 >
                     Login
                 </Button>
-            </Box>
-        </Paper>
+            </form>
+        </Card>
     )
 }
 

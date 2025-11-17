@@ -1,4 +1,4 @@
-import { Button } from "@mui/material";
+import { Button } from "@/components/ui/button";
 import { useICSContent } from "../../Hooks/useICSContent"
 import type React from "react";
 
@@ -20,9 +20,9 @@ const ICSDownloadButton: React.FC<ICSDownloadButtonProps> = ({ meetingId, userId
         URL.revokeObjectURL(link.href);
     }
 
-    if (isLoading) return <p>Generating calendar...</p>;
+    if (isLoading) return <p className="text-sm text-muted-foreground">Generating calendar...</p>;
 
-    if (isError) return <p>Error: {error.message}</p>;
+    if (isError) return <p className="text-sm text-destructive">Error: {error.message}</p>;
 
     return <Button onClick={handleDownload}>Download Meeting Schedule (.ics)</Button>
 }

@@ -1,5 +1,12 @@
-import { ChevronLeft, ChevronRight } from "@mui/icons-material";
-import { Box, IconButton, MenuItem, Select, type SelectChangeEvent } from "@mui/material";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
 import React,  { useMemo, useCallback } from "react";
 import { MONTH_OPTIONS } from "../../Ultils/monthData";
 
@@ -16,7 +23,7 @@ const MonthYearSelector: React.FC<MonthYearSelectorProps> = ({
     onMonthChange,
 }) => {
     const currentYear = new Date().getFullYear();
-    
+
     const yearRange = useMemo(
         () => Array.from({ length: 11 }, (_, i) => currentYear - 5 + i),
         [currentYear]
@@ -40,52 +47,66 @@ const MonthYearSelector: React.FC<MonthYearSelectorProps> = ({
         }
     }, [month, year, onMonthChange, onYearChange]);
 
-    const handleMonthChange = useCallback((event: SelectChangeEvent<number>) => {
-        onMonthChange(Number(event.target.value));
+    const handleMonthChange = useCallback((value: string) => {
+        onMonthChange(Number(value));
     }, [onMonthChange]);
 
-    const handleYearChange = useCallback((event: SelectChangeEvent<number>) => {
-        onYearChange(Number(event.target.value));
+    const handleYearChange = useCallback((value: string) => {
+        onYearChange(Number(value));
     }, [onYearChange]);
 
   return (
-    <Box display="flex" alignItems="center" gap={2} sx={{ mb: 2 }}>
-        <IconButton onClick={handlePrevious} aria-label="Previous month">
-            <ChevronLeft />
-        </IconButton>
-      
-        <Select
-            value={month}
-            onChange={handleMonthChange}
-            size="small"
-            sx={{ minWidth: 120 }}
-            aria-label="Select month"
+    <div className="flex items-center gap-2 mb-2">
+        <Button
+            variant="outline"
+            size="icon"
+            onClick={handlePrevious}
+            aria-label="Previous month"
         >
-            {MONTH_OPTIONS.map(({ value, label }) => (
-            <MenuItem key={value} value={value}>
-                {label}
-            </MenuItem>
-            ))}
-        </Select>
-      
+            <ChevronLeft className="h-4 w-4" />
+        </Button>
+
         <Select
-            value={year}
-            onChange={handleYearChange}
-            size="small"
-            sx={{ minWidth: 90 }}
-            aria-label="Select year"
+            value={month.toString()}
+            onValueChange={handleMonthChange}
         >
-            {yearRange.map((yearValue) => (
-            <MenuItem key={yearValue} value={yearValue}>
-                {yearValue}
-            </MenuItem>
-            ))}
+            <SelectTrigger className="w-[120px]" aria-label="Select month">
+                <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+                {MONTH_OPTIONS.map(({ value, label }) => (
+                    <SelectItem key={value} value={value.toString()}>
+                        {label}
+                    </SelectItem>
+                ))}
+            </SelectContent>
         </Select>
-      
-      <IconButton onClick={handleNext} aria-label="Next month">
-        <ChevronRight />
-      </IconButton>
-    </Box>
+
+        <Select
+            value={year.toString()}
+            onValueChange={handleYearChange}
+        >
+            <SelectTrigger className="w-[90px]" aria-label="Select year">
+                <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+                {yearRange.map((yearValue) => (
+                    <SelectItem key={yearValue} value={yearValue.toString()}>
+                        {yearValue}
+                    </SelectItem>
+                ))}
+            </SelectContent>
+        </Select>
+
+      <Button
+            variant="outline"
+            size="icon"
+            onClick={handleNext}
+            aria-label="Next month"
+        >
+            <ChevronRight className="h-4 w-4" />
+        </Button>
+    </div>
   );
 };
 

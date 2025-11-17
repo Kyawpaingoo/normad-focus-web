@@ -1,8 +1,16 @@
 import type React from "react";
 import type { sortDirection } from "../../dtos/responseDtos";
-import { Box, Button, FormControl, InputLabel, MenuItem, Select } from "@mui/material";
+import { Button } from "@/components/ui/button";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
 import MonthYearSelector from "./MonthYearSelector";
-import { Clear } from "@mui/icons-material";
+import { X } from "lucide-react";
 
 interface TaskFiltersProps {
     year: number;
@@ -17,16 +25,16 @@ interface TaskFiltersProps {
     setPriority: (priority: string) => void;
 }
 const TaskFilters: React.FC<TaskFiltersProps> = ({year, month, sortDir, status, priority, setYear, setMonth, setSortDir, setStatus, setPriority}) => {
-    const handleStatusChange = (event: React.ChangeEvent<{value: string}>) => {
-        setStatus(event.target.value);
+    const handleStatusChange = (value: string) => {
+        setStatus(value);
     }
 
-    const handlePriorityChange = (event: React.ChangeEvent<{value: string}>) => {
-        setPriority(event.target.value);
+    const handlePriorityChange = (value: string) => {
+        setPriority(value);
     }
 
-    const handleSortDirChange = (event: React.ChangeEvent<{value: sortDirection}>) => {
-        setSortDir(event.target.value);
+    const handleSortDirChange = (value: string) => {
+        setSortDir(value as sortDirection);
     }
 
     const clearAllFilters = () => {
@@ -45,58 +53,74 @@ const TaskFilters: React.FC<TaskFiltersProps> = ({year, month, sortDir, status, 
     };
 
     return(
-        <Box display={'flex'} gap={2} flexWrap={'wrap'}>
+        <div className="flex gap-2 flex-wrap">
             <MonthYearSelector year={year} month={month} onYearChange={setYear} onMonthChange={setMonth} />
-            
-            
-            <FormControl size="small" sx={{ minWidth: 160 }}>
-                <InputLabel>Sorting Index</InputLabel>
+
+
+            <div className="flex flex-col gap-1.5 min-w-[160px]">
+                <Label className="text-xs">Sorting Index</Label>
                 <Select
                     value={sortDir}
-                    label="Sorting Index"
-                    onChange={handleSortDirChange}
+                    onValueChange={handleSortDirChange}
                 >
-                    <MenuItem value="desc">Newest First</MenuItem>                       
-                    <MenuItem value="asc">Oldest First</MenuItem>
+                    <SelectTrigger className="h-9">
+                        <SelectValue placeholder="Sort by" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="desc">Newest First</SelectItem>
+                        <SelectItem value="asc">Oldest First</SelectItem>
+                    </SelectContent>
                 </Select>
-            </FormControl>
+            </div>
 
-            <FormControl size="small" sx={{ minWidth: 140 }}>
-                <InputLabel>Status</InputLabel>
+            <div className="flex flex-col gap-1.5 min-w-[140px]">
+                <Label className="text-xs">Status</Label>
                 <Select
                     value={status}
-                    label="Status"
-                    onChange={handleStatusChange}
+                    onValueChange={handleStatusChange}
                 >
-                    <MenuItem value="To Do">To Do</MenuItem>                       
-                    <MenuItem value="In Progress">In Progress</MenuItem>
-                    <MenuItem value="Done">Done</MenuItem>
+                    <SelectTrigger className="h-9">
+                        <SelectValue placeholder="All statuses" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="To Do">To Do</SelectItem>
+                        <SelectItem value="In Progress">In Progress</SelectItem>
+                        <SelectItem value="Done">Done</SelectItem>
+                    </SelectContent>
                 </Select>
-            </FormControl>
+            </div>
 
-            <FormControl size="small" sx={{ minWidth: 140 }}>
-                <InputLabel>Priority</InputLabel>
+            <div className="flex flex-col gap-1.5 min-w-[140px]">
+                <Label className="text-xs">Priority</Label>
                 <Select
                     value={priority}
-                    label="Priority"
-                    onChange={handlePriorityChange}
+                    onValueChange={handlePriorityChange}
                 >
-                    <MenuItem value="Low">Low</MenuItem>                       
-                    <MenuItem value="Medium">Medium</MenuItem>
-                    <MenuItem value="High">High</MenuItem>
+                    <SelectTrigger className="h-9">
+                        <SelectValue placeholder="All priorities" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="Low">Low</SelectItem>
+                        <SelectItem value="Medium">Medium</SelectItem>
+                        <SelectItem value="High">High</SelectItem>
+                    </SelectContent>
                 </Select>
-            </FormControl>
+            </div>
 
             {getActiveFiltersCount() > 0 && (
-                <Button
-                    startIcon={<Clear />}
-                    onClick={clearAllFilters}
-                    size="small"
-                    variant="outlined"
-                    sx={{paddingY: 0}}
-                >Clear All</Button>
+                <div className="flex items-end">
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={clearAllFilters}
+                        className="h-9"
+                    >
+                        <X className="h-4 w-4 mr-1" />
+                        Clear All
+                    </Button>
+                </div>
             )}
-        </Box>
+        </div>
     )
 }
 

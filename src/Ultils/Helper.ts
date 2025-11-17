@@ -119,7 +119,6 @@ export const getColumnKeyFromStatus = (status: TaskStatus): string => {
         case 'To Do': return 'todo';
         case 'In Progress': return 'in_progress';
         case 'Done': return 'done';
-        default: return status.toLowerCase().replace(' ', '_');
     }
 };
 

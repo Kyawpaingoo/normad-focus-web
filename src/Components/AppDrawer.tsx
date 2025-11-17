@@ -1,6 +1,9 @@
-import { Avatar, Box, Divider, Drawer, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Typography } from "@mui/material";
+import { Sheet, SheetContent } from "@/components/ui/sheet";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
 import { useThemeHook } from "../Context/Theme";
 import { useNavigate } from "react-router-dom";
+import { Home, DollarSign, CheckSquare, Calendar, MapPin } from "lucide-react";
 
 interface AppDrawerProps {
     open: boolean;
@@ -10,94 +13,73 @@ interface AppDrawerProps {
 const AppDrawer: React.FC<AppDrawerProps> = ({open, onClose})=> {
     const {auth} = useThemeHook();
     const navigate = useNavigate();
+
+    const handleNavigation = (path: string) => {
+        navigate(path);
+        onClose();
+    };
+
     return (
-        <Drawer
-            open={open}
-            onClose={onClose}
-        >
-            <Box
-                    sx={{
-                        mb: 6,
-                        width: 300,
-                        height: 40,
-                        bgcolor: "background",
-                        position: 'relative'
-                    }}
-                >
-                    <Box
-                        sx={{
-                            gap: 2,
-                            display: 'flex',
-                            flexDirection: 'row',
-                            alignItems: 'center',
-                            position: 'absolute',
-                            left: 20,
-                            bottom: -30
-                        }}
-                    >
-                        <Avatar
-                            sx={{
-                                width: 25,
-                                height: 25,
-                                color: 'white',
-                                background: 'primary'
-                            }}
-                        />
-                        <Typography sx={{fontWeight: 'blod'}}>
+        <Sheet open={open} onOpenChange={onClose}>
+            <SheetContent side="left" className="w-[300px] p-0">
+                <div className="mb-6 w-full h-10 bg-background relative">
+                    <div className="flex flex-row items-center gap-2 absolute left-5 bottom-[-30px]">
+                        <Avatar className="w-6 h-6 bg-primary">
+                            <AvatarFallback className="text-white text-xs">
+                                {auth?.name?.[0] || 'G'}
+                            </AvatarFallback>
+                        </Avatar>
+                        <span className="font-bold">
                             {auth ? auth.name : 'Guest'}
-                        </Typography>
-                    </Box>
-                </Box>
-                
-                <Divider />
-                <List>
-                    <ListItem>
-                        <ListItemButton
-                            onClick={()=>navigate('/')}
-                        >
-                            <ListItemIcon>
-                                <ListItemText>Home</ListItemText>
-                            </ListItemIcon>
-                        </ListItemButton>
-                    </ListItem>
-                    <ListItem>
-                        <ListItemButton
-                            onClick={()=>navigate('/expense')}
-                        >
-                            <ListItemIcon>
-                                <ListItemText>Expense</ListItemText>
-                            </ListItemIcon>
-                        </ListItemButton>
-                    </ListItem>
-                    <ListItem>
-                        <ListItemButton
-                            onClick={()=>navigate('/task')}
-                        >
-                            <ListItemIcon>
-                                <ListItemText>Task</ListItemText>
-                            </ListItemIcon>
-                        </ListItemButton>
-                    </ListItem>
-                     <ListItem>
-                        <ListItemButton
-                            onClick={()=>navigate('/meeting')}
-                        >
-                            <ListItemIcon>
-                                <ListItemText>Meeting Schedule</ListItemText>
-                            </ListItemIcon>
-                        </ListItemButton>
-                    </ListItem>
-                     <ListItem>
-                        <ListItemButton
-                            onClick={()=>navigate('/country-log')}
-                        >
-                            <ListItemIcon>
-                                <ListItemText>Country Log</ListItemText>
-                            </ListItemIcon>
-                        </ListItemButton>
-                    </ListItem>
-                </List>
-        </Drawer>
+                        </span>
+                    </div>
+                </div>
+
+                <hr className="my-4 border-border" />
+                <nav className="flex flex-col gap-1 px-2">
+                    <Button
+                        variant="ghost"
+                        className="justify-start gap-2"
+                        onClick={() => handleNavigation('/')}
+                    >
+                        <Home className="h-5 w-5" />
+                        <span>Home</span>
+                    </Button>
+                    <Button
+                        variant="ghost"
+                        className="justify-start gap-2"
+                        onClick={() => handleNavigation('/expense')}
+                    >
+                        <DollarSign className="h-5 w-5" />
+                        <span>Expense</span>
+                    </Button>
+                    <Button
+                        variant="ghost"
+                        className="justify-start gap-2"
+                        onClick={() => handleNavigation('/task')}
+                    >
+                        <CheckSquare className="h-5 w-5" />
+                        <span>Task</span>
+                    </Button>
+                    <Button
+                        variant="ghost"
+                        className="justify-start gap-2"
+                        onClick={() => handleNavigation('/meeting')}
+                    >
+                        <Calendar className="h-5 w-5" />
+                        <span>Meeting Schedule</span>
+                    </Button>
+                    <Button
+                        variant="ghost"
+                        className="justify-start gap-2"
+                        onClick={() => handleNavigation('/country-log')}
+                    >
+                        <MapPin className="h-5 w-5" />
+                        <span>Country Log</span>
+                    </Button>
+                </nav>
+            </SheetContent>
+        </Sheet>
     )
 }
 

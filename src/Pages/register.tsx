@@ -4,17 +4,12 @@ import { useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import type { RegisterRequestDto, RegisterResponseDto } from "../dtos/authDtos";
 import { register } from "../ApiRequestHelpers/authApiRequest";
-import { Alert, Box,
-  Button,
-  Link,
-  Paper,
-  TextField,
-  Typography,
-  InputAdornment,
-  IconButton } from "@mui/material";
-
-import Visibility from "@mui/icons-material/Visibility";
-import VisibilityOff from "@mui/icons-material/VisibilityOff";
+import { Eye, EyeOff } from "lucide-react";
+import { Card } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 const Register: React.FC = () => {
     const [error, setError] = useState<string | null>(null);
@@ -23,10 +18,10 @@ const Register: React.FC = () => {
 
     const navigate = useNavigate();
 
-    const nameInput = useRef<HTMLInputElement | null>(null);
-    const emailInput = useRef<HTMLInputElement | null>(null);
-    const passwordInput = useRef<HTMLInputElement | null>(null);
-    const confirmPasswordInput = useRef<HTMLInputElement | null>(null);
+    const nameInput = useRef<HTMLInputElement>(null);
+    const emailInput = useRef<HTMLInputElement>(null);
+    const passwordInput = useRef<HTMLInputElement>(null);
+    const confirmPasswordInput = useRef<HTMLInputElement>(null);
 
     const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
@@ -59,70 +54,96 @@ const Register: React.FC = () => {
     })   
 
     return (
-        <Paper elevation={3} sx={{padding: 4, borderRadius: 2, minWidth: 400, maxWidth: 420}}>
-            <Box mb={2} display={'flex'} justifyContent={'flex-start'}>
-                <Typography variant="h4" fontWeight={700}>Create an account</Typography>
-            </Box>
-            
+        <Card className="p-8 rounded-lg min-w-[400px] max-w-[420px] shadow-lg">
+            <div className="mb-4">
+                <h1 className="text-3xl font-bold">Create an account</h1>
+            </div>
+
             {
                 error && (
-                    <Alert severity="error">
-                        {error}
+                    <Alert variant="destructive" className="mb-4">
+                        <AlertDescription>
+                            {error}
+                        </AlertDescription>
                     </Alert>
                 )
             }
 
-            <Box component="form" onSubmit={handleSubmit} mt={2}>
-                <Typography mt={2} mb={1} fontWeight={500}>User Name</Typography>
-                <TextField inputRef={nameInput} placeholder="Enter your name" fullWidth />
+            <form onSubmit={handleSubmit} className="mt-4 space-y-4">
+                <div className="space-y-2">
+                    <Label htmlFor="name" className="font-medium">User Name</Label>
+                    <Input
+                        id="name"
+                        ref={nameInput}
+                        placeholder="Enter your name"
+                    />
+                </div>
 
-                <Typography mt={2} mb={1} fontWeight={500}>Email Address</Typography>
-                <TextField inputRef={emailInput} placeholder="Enter your email" fullWidth />
+                <div className="space-y-2">
+                    <Label htmlFor="email" className="font-medium">Email Address</Label>
+                    <Input
+                        id="email"
+                        ref={emailInput}
+                        placeholder="Enter your email"
+                        type="email"
+                    />
+                </div>
 
-                <Typography mt={2} mb={1} fontWeight={500}>Password</Typography>
-                <TextField type={showPassword ? "text" : "password"} inputRef={passwordInput} placeholder="Enter your password" fullWidth InputProps={{
-                    endAdornment: (
-                        <InputAdornment position="end">
-                        <IconButton onClick={handleTogglePassword} edge="end">
-                            {showPassword ? <Visibility /> : <VisibilityOff />}
-                        </IconButton>
-                        </InputAdornment>
-                    )
-                    }} />
+                <div className="space-y-2">
+                    <Label htmlFor="password" className="font-medium">Password</Label>
+                    <div className="relative">
+                        <Input
+                            id="password"
+                            ref={passwordInput}
+                            type={showPassword ? "text" : "password"}
+                            placeholder="Enter your password"
+                            className="pr-10"
+                        />
+                        <button
+                            type="button"
+                            onClick={handleTogglePassword}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                        >
+                            {showPassword ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
+                        </button>
+                    </div>
+                </div>
 
-                <Typography mt={2} mb={1} fontWeight={500}>Confirm Password</Typography>
-                <TextField type={showConfirmPassword ? "text" : "password"} inputRef={confirmPasswordInput} placeholder="Confirm your password" fullWidth InputProps={{
-                    endAdornment: (
-                        <InputAdornment position="end">
-                        <IconButton onClick={handleToggleConfirmPassword} edge="end">
-                            {showConfirmPassword ? <Visibility /> : <VisibilityOff />}
-                        </IconButton>
-                        </InputAdornment>
-                    )
-                }} />
+                <div className="space-y-2">
+                    <Label htmlFor="confirm-password" className="font-medium">Confirm Password</Label>
+                    <div className="relative">
+                        <Input
+                            id="confirm-password"
+                            ref={confirmPasswordInput}
+                            type={showConfirmPassword ? "text" : "password"}
+                            placeholder="Confirm your password"
+                            className="pr-10"
+                        />
+                        <button
+                            type="button"
+                            onClick={handleToggleConfirmPassword}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                        >
+                            {showConfirmPassword ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
+                        </button>
+                    </div>
+                </div>
 
-                 <Box mt={2} display={'flex'} justifyContent={'flex-start'}>
-                    <Link href='/login' underline='hover' color='primary' fontSize={14} fontWeight={500}>
+                <div className="mt-2">
+                    <a href='/login' className="text-primary hover:underline text-sm font-medium">
                        Already have an account? Sign In here.
-                    </Link>
-                </Box>
+                    </a>
+                </div>
 
-                <Button type="submit"
-                    fullWidth
-                    variant="contained"
-                    sx={{
-                    mt: 3,
-                    backgroundColor: "#1976ff",
-                    fontSize: "1.15rem",
-                    textTransform: "none",
-                    py: 1.2,
-                    borderRadius: 1
-                    }}>
+                <Button
+                    type="submit"
+                    className="w-full mt-6 text-lg py-6"
+                >
                     Create Account
                 </Button>
-                
-            </Box>
-        </Paper>
+
+            </form>
+        </Card>
     )
 }
 

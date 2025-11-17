@@ -1,15 +1,15 @@
-import { createContext, useContext, useMemo, useState } from "react";
-import { CssBaseline, type PaletteMode, ThemeProvider, createTheme } from "@mui/material";
-import { grey } from "@mui/material/colors";
+import { createContext, useContext, useEffect, useState } from "react";
 import { RouterProvider } from "react-router-dom";
 import router from '../Routers';
 import type { User } from "../dtos/authDtos";
 import axios from "axios";
 import { useVerifyUser } from "../Hooks/useVerifyUser";
 
+type Theme = 'light' | 'dark';
+
 interface ThemeContextProps {
     toggleTheme: ()=> void;
-    mode: PaletteMode;
+    mode: Theme;
     auth: User | null
     setAuth: (user: User | null) => void
 }
@@ -31,52 +31,35 @@ export const useThemeHook = () => {
 }
 
 const App: React.FC = () => {
-    const [mode, setMode] = useState<PaletteMode>('light');
-   // const [auth, setAuth] = useState<User | null>(null);
+    const [mode, setMode] = useState<Theme>('light');
     const {data: user, isLoading} = useVerifyUser();
-   // const [loading, setLoading] = useState(true);
 
     const toggleTheme = () => {
         setMode((prevMode) => (prevMode === "light" ? "dark" : "light"));
     };
 
-    axios.defaults.withCredentials = true;
-
-    const theme = useMemo(() => {
-        return createTheme({
-            palette: {
-                mode: mode,
-                primary: {
-                    main: mode === 'light' ? '#1976d2' : '#90caf9',
-                },
-                // banner: mode === 'dark' ? grey[800] : grey[200],
-                text: {
-                    primary: mode === 'dark' ? grey[300] : grey[900],
-                    secondary: mode === 'dark' ? grey[400] : grey[700],
-                }
-            }
-        });
+    // Apply dark mode class to document root
+    useEffect(() => {
+        const root = window.document.documentElement;
+        root.classList.remove('light', 'dark');
+        root.classList.add(mode);
     }, [mode]);
 
-    if(isLoading) return <div>Loading...</div>;
+    axios.defaults.withCredentials = true;
+
+    if(isLoading) return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
 
     return (
-            <ThemeProvider theme={theme}>
-                <ThemeContext.Provider
-                    value={{
-                        toggleTheme,
-                        mode: mode,
-                        auth: user ? {name: user.name, id: user.id, email: user.email} : null,
-                        setAuth: () => {}
-                    }}
-                > 
-                    
-                        <CssBaseline />
-                        <RouterProvider router={router} />
-                    
-                    
-                </ThemeContext.Provider>
-            </ThemeProvider>
+        <ThemeContext.Provider
+            value={{
+                toggleTheme,
+                mode: mode,
+                auth: user ? {name: user.name, id: user.id, email: user.email} : null,
+                setAuth: () => {}
+            }}
+        >
+            <RouterProvider router={router} />
+        </ThemeContext.Provider>
     )
 }
 

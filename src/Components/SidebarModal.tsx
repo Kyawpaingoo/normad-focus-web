@@ -1,6 +1,7 @@
 import React from "react";
-import { Drawer, Divider, Box, Typography, IconButton, Stack } from "@mui/material";
-import CloseIcon from '@mui/icons-material/Close';
+import { Sheet, SheetContent } from "@/components/ui/sheet";
+import { Button } from "@/components/ui/button";
+import { X } from "lucide-react";
 
 interface SidebarModalProps {
     open: boolean;
@@ -11,34 +12,27 @@ interface SidebarModalProps {
 
 const SidebarModal: React.FC<SidebarModalProps> = ({open, onClose, title, children}) => {
     return (
-        <Drawer
-            open={open}
-            onClose={onClose}
-            anchor="right"
-            sx={{width: '100%', maxWidth: 400, p:2}}
-        >
-            <Box sx={{
-                width: 450,
-                height: '100vh',
-                borderRight: '1px solid #ddd',
-                bgcolor: '#f8f9fa',
-                p: 2,
-                boxSizing: 'border-box',
-                overflowY: 'auto',
-            }}>
-                <Stack height={'40px'} direction="row" justifyContent="space-between" alignItems="center" mt={2} mb={2}>
-                    <Typography variant="h6">{title}</Typography>
-                    <IconButton onClick={onClose}>
-                        <CloseIcon />
-                    </IconButton>
-                </Stack>
+        <Sheet open={open} onOpenChange={onClose}>
+            <SheetContent
+                side="right"
+                className="w-[450px] h-screen border-r border-border bg-[#f8f9fa] p-4 overflow-y-auto"
+            >
+                <div className="flex flex-row justify-between items-center h-10 mt-2 mb-2">
+                    <h2 className="text-xl font-semibold">{title}</h2>
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={onClose}
+                    >
+                        <X className="h-5 w-5" />
+                    </Button>
+                </div>
 
-                <Divider sx={{mb: 2}} />
+                <hr className="mb-4 border-border" />
 
                 {children}
-            </Box>
-            
-        </Drawer>
+            </SheetContent>
+        </Sheet>
     )
 }
 

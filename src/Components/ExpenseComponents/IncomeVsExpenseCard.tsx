@@ -1,4 +1,3 @@
-import { Card, CardContent, Typography } from "@mui/material";
 import { Bar } from "react-chartjs-2";
 import {
   Chart as ChartJS,
@@ -8,7 +7,8 @@ import {
   Tooltip,
   Legend,
 } from "chart.js";
-import type { IncomeVSExpenseDto } from "../dtos/expenseDtos";
+import type { IncomeVSExpenseDto } from "../../dtos/expenseDtos";
+import { Card, CardContent } from "@/components/ui/card";
 
 ChartJS.register(BarElement, CategoryScale, LinearScale, Tooltip, Legend);
 
@@ -31,21 +31,21 @@ const IncomeVsExpenseCard: React.FC<IncomeVsExpenseProps> = ({incomeVsExpense}) 
     }
 
     return (
-        <Card elevation={0} sx={{borderRadius: 2, border: '1px solid #E7EAEE', maxWidth: 'md'}}>
-            <CardContent>
-                <Typography variant="subtitle2" color="text.secondary">
-                    Income Vs Exepsne
-                </Typography>
+        <Card className="rounded-lg border border-[#E7EAEE] max-w-md">
+            <CardContent className="p-4">
+                <p className="text-sm text-muted-foreground">
+                    Income Vs Expense
+                </p>
 
-                <Typography variant="h4" sx={{fontWeight: 700, mt: 1}}>
+                <h2 className="text-3xl font-bold mt-2">
                     ${incomeVsExpense?.total.toLocaleString()}
-                </Typography>
+                </h2>
 
-                <Typography variant="subtitle2" sx={{color: "#5CB176", mt: 0.5}}>
-                    Last 6 months <span style={{color: "#5CB176"}}>+{incomeVsExpense?.change}%</span>
-                </Typography>
+                <p className="text-sm text-[#5CB176] mt-1">
+                    Last 6 months <span className="text-[#5CB176]">+{incomeVsExpense?.change}%</span>
+                </p>
 
-                <Bar 
+                <Bar
                     data={data}
                     options={{
                         plugins: {legend: {display: false}},
